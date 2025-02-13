@@ -1,4 +1,6 @@
+
 import { Github, Mail } from "lucide-react";
+import { Link } from "react-router-dom";
 
 export const Footer = () => {
   return (
@@ -20,9 +22,9 @@ export const Footer = () => {
           <div>
             <h3 className="text-lg font-semibold text-medblue dark:text-white mb-4">Quick Links</h3>
             <ul className="space-y-2 text-gray-600 dark:text-gray-300">
-              <li><a href="/privacy-policy">Privacy Policy</a></li>
-              <li><a href="/disclaimer">Disclaimer</a></li>
-              <li><a href="/terms">Terms of Service</a></li>
+              <li><Link to="/privacy-policy">Privacy Policy</Link></li>
+              <li><Link to="/disclaimer">Disclaimer</Link></li>
+              <li><Link to="/terms">Terms of Service</Link></li>
             </ul>
           </div>
           
