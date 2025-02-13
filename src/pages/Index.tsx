@@ -1,9 +1,21 @@
+
 import { Navbar } from "@/components/Navbar";
 import { Footer } from "@/components/Footer";
 import { Book } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import { useNavigate } from "react-router-dom";
 
 const Index = () => {
+  const navigate = useNavigate();
+
+  const handleStartPractice = () => {
+    navigate("/auth");
+  };
+
+  const handleReadMore = () => {
+    navigate("/blog");
+  };
+
   return (
     <div className="min-h-screen bg-medbg dark:bg-gray-900">
       <Navbar />
@@ -18,7 +30,10 @@ const Index = () => {
             Comprehensive preparation for NEET PG, INICET, FMGE, USMLE, and MBBS with our intelligent quiz platform
           </p>
           <div className="flex justify-center gap-4">
-            <Button className="bg-medteal hover:bg-medteal/90 text-white">
+            <Button 
+              className="bg-medteal hover:bg-medteal/90 text-white"
+              onClick={handleStartPractice}
+            >
               Start Free Practice
             </Button>
             <Button variant="outline">
@@ -79,7 +94,10 @@ const Index = () => {
               <p className="text-gray-600 dark:text-gray-300 mb-6">
                 Stay updated with the latest medical education news, exam patterns, and preparation strategies.
               </p>
-              <Button className="w-full bg-medblue hover:bg-medblue/90 text-white">
+              <Button 
+                className="w-full bg-medblue hover:bg-medblue/90 text-white"
+                onClick={handleReadMore}
+              >
                 Read More
               </Button>
             </div>
@@ -87,20 +105,17 @@ const Index = () => {
         </div>
       </section>
 
-      {/* Ad Space */}
-      <section className="py-12 px-4 sm:px-6 lg:px-8 bg-white dark:bg-gray-800">
-        <div className="max-w-7xl mx-auto">
-          <div className="h-[250px] bg-gray-100 dark:bg-gray-700 rounded-lg flex items-center justify-center">
-            <p className="text-gray-500 dark:text-gray-400">Advertisement Space</p>
-          </div>
-        </div>
-      </section>
-
       {/* YouTube Video Space */}
       <section className="py-12 px-4 sm:px-6 lg:px-8">
         <div className="max-w-3xl mx-auto">
-          <div className="aspect-w-16 aspect-h-9 bg-gray-100 dark:bg-gray-700 rounded-lg flex items-center justify-center">
-            <p className="text-gray-500 dark:text-gray-400">YouTube Video Space</p>
+          <div className="aspect-w-16 aspect-h-9 rounded-lg overflow-hidden">
+            <iframe
+              src="https://www.youtube.com/embed/9KHLTZaJcR8"
+              title="MedQuizAI Tutorial"
+              allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+              allowFullScreen
+              className="w-full h-full"
+            ></iframe>
           </div>
         </div>
       </section>
