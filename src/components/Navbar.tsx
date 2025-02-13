@@ -31,11 +31,11 @@ export const Navbar = () => {
             </Button>
             <Button variant="ghost" className="flex items-center gap-2">
               <Info className="h-4 w-4" />
-              <Link to="#" className="text-gray-700 dark:text-gray-300">Privacy Policy</Link>
+              <Link to="/privacy-policy" className="text-gray-700 dark:text-gray-300">Privacy Policy</Link>
             </Button>
             <Button variant="ghost" className="flex items-center gap-2">
               <Info className="h-4 w-4" />
-              <Link to="#" className="text-gray-700 dark:text-gray-300">Disclaimer</Link>
+              <Link to="/disclaimer" className="text-gray-700 dark:text-gray-300">Disclaimer</Link>
             </Button>
             <ThemeToggle />
             <Button 
