@@ -53,6 +53,8 @@ jobs:
         run: |
           mkdir -p dist/quiz
           cp -r quiz/dist/* dist/quiz/
+          cp sitemap.xml dist/
+          cp public/404.html dist/
 
       - name: Setup Pages
         uses: actions/configure-pages@v4
