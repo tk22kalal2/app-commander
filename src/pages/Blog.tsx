@@ -25,7 +25,28 @@ const Blog = () => {
     if (ogDescription) {
       ogDescription.setAttribute("content", "Access comprehensive medical education resources, study guides, and exam preparation tips for NEET PG, INICET, USMLE, and more.");
     }
+
+    // Handle hash navigation when component mounts
+    const hash = window.location.hash;
+    if (hash) {
+      const element = document.querySelector(hash);
+      if (element) {
+        setTimeout(() => {
+          element.scrollIntoView({ behavior: 'smooth' });
+        }, 100);
+      }
+    }
   }, []);
+
+  const handleHashClick = (e: React.MouseEvent<HTMLAnchorElement>) => {
+    e.preventDefault();
+    const hash = e.currentTarget.hash;
+    const element = document.querySelector(hash);
+    if (element) {
+      element.scrollIntoView({ behavior: 'smooth' });
+      window.history.pushState(null, '', hash);
+    }
+  };
 
   return (
     <div className="min-h-screen bg-medbg dark:bg-gray-900">
@@ -43,22 +64,22 @@ const Blog = () => {
             <ScrollArea className="h-[200px]">
               <ul className="space-y-2">
                 <li>
-                  <a href="#neet-pg" className="text-gray-700 dark:text-gray-300 hover:text-medblue">NEET PG 2024: Complete Preparation Strategy & Important Topics</a>
+                  <a href="#neet-pg" onClick={handleHashClick} className="text-gray-700 dark:text-gray-300 hover:text-medblue">NEET PG 2024: Complete Preparation Strategy & Important Topics</a>
                 </li>
                 <li>
-                  <a href="#usmle" className="text-gray-700 dark:text-gray-300 hover:text-medblue">USMLE Step 1: High-Yield Topics & Question Bank Analysis</a>
+                  <a href="#usmle" onClick={handleHashClick} className="text-gray-700 dark:text-gray-300 hover:text-medblue">USMLE Step 1: High-Yield Topics & Question Bank Analysis</a>
                 </li>
                 <li>
-                  <a href="#inicet" className="text-gray-700 dark:text-gray-300 hover:text-medblue">INICET: Subject-wise Preparation Guide & Previous Year Analysis</a>
+                  <a href="#inicet" onClick={handleHashClick} className="text-gray-700 dark:text-gray-300 hover:text-medblue">INICET: Subject-wise Preparation Guide & Previous Year Analysis</a>
                 </li>
                 <li>
-                  <a href="#clinical-skills" className="text-gray-700 dark:text-gray-300 hover:text-medblue">Essential Clinical Skills for Medical Practitioners</a>
+                  <a href="#clinical-skills" onClick={handleHashClick} className="text-gray-700 dark:text-gray-300 hover:text-medblue">Essential Clinical Skills for Medical Practitioners</a>
                 </li>
                 <li>
-                  <a href="#research" className="text-gray-700 dark:text-gray-300 hover:text-medblue">Medical Research & Publication Strategies</a>
+                  <a href="#research" onClick={handleHashClick} className="text-gray-700 dark:text-gray-300 hover:text-medblue">Medical Research & Publication Strategies</a>
                 </li>
                 <li>
-                  <a href="#career" className="text-gray-700 dark:text-gray-300 hover:text-medblue">Specialized Medical Career Paths & Opportunities</a>
+                  <a href="#career" onClick={handleHashClick} className="text-gray-700 dark:text-gray-300 hover:text-medblue">Specialized Medical Career Paths & Opportunities</a>
                 </li>
               </ul>
             </ScrollArea>
@@ -66,7 +87,7 @@ const Blog = () => {
           
           {/* Featured Blog Posts */}
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8 mb-12">
-            <div id="neet-pg" className="bg-white dark:bg-gray-800 rounded-lg shadow-lg overflow-hidden">
+            <div id="neet-pg" className="bg-white dark:bg-gray-800 rounded-lg shadow-lg overflow-hidden scroll-mt-24">
               <img src="/Your paragraph text (1).png" alt="NEET PG 2024 Preparation Guide" className="w-full h-48 object-cover" />
               <div className="p-6">
                 <h2 className="text-xl font-semibold text-medblue dark:text-white mb-3">
@@ -83,7 +104,7 @@ const Blog = () => {
               </div>
             </div>
 
-            <div id="usmle" className="bg-white dark:bg-gray-800 rounded-lg shadow-lg overflow-hidden">
+            <div id="usmle" className="bg-white dark:bg-gray-800 rounded-lg shadow-lg overflow-hidden scroll-mt-24">
               <img src="/Your paragraph text (2).png" alt="USMLE Step 1 Guide" className="w-full h-48 object-cover" />
               <div className="p-6">
                 <h2 className="text-xl font-semibold text-medblue dark:text-white mb-3">
@@ -100,7 +121,7 @@ const Blog = () => {
               </div>
             </div>
 
-            <div id="inicet" className="bg-white dark:bg-gray-800 rounded-lg shadow-lg overflow-hidden">
+            <div id="inicet" className="bg-white dark:bg-gray-800 rounded-lg shadow-lg overflow-hidden scroll-mt-24">
               <img src="/Your paragraph text (3).png" alt="INICET Preparation Guide" className="w-full h-48 object-cover" />
               <div className="p-6">
                 <h2 className="text-xl font-semibold text-medblue dark:text-white mb-3">
@@ -120,7 +141,7 @@ const Blog = () => {
 
           {/* Additional Blog Posts */}
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
-            <div id="clinical-skills" className="bg-white dark:bg-gray-800 rounded-lg shadow-lg overflow-hidden">
+            <div id="clinical-skills" className="bg-white dark:bg-gray-800 rounded-lg shadow-lg overflow-hidden scroll-mt-24">
               <img src="/Your paragraph text (4).png" alt="Clinical Skills Development" className="w-full h-48 object-cover" />
               <div className="p-6">
                 <h2 className="text-xl font-semibold text-medblue dark:text-white mb-3">
@@ -137,7 +158,7 @@ const Blog = () => {
               </div>
             </div>
 
-            <div id="research" className="bg-white dark:bg-gray-800 rounded-lg shadow-lg overflow-hidden">
+            <div id="research" className="bg-white dark:bg-gray-800 rounded-lg shadow-lg overflow-hidden scroll-mt-24">
               <img src="/Your paragraph text (5).png" alt="Medical Research Guide" className="w-full h-48 object-cover" />
               <div className="p-6">
                 <h2 className="text-xl font-semibold text-medblue dark:text-white mb-3">
@@ -154,7 +175,7 @@ const Blog = () => {
               </div>
             </div>
 
-            <div id="career" className="bg-white dark:bg-gray-800 rounded-lg shadow-lg overflow-hidden">
+            <div id="career" className="bg-white dark:bg-gray-800 rounded-lg shadow-lg overflow-hidden scroll-mt-24">
               <img src="/Your paragraph text (6).png" alt="Medical Career Guide" className="w-full h-48 object-cover" />
               <div className="p-6">
                 <h2 className="text-xl font-semibold text-medblue dark:text-white mb-3">
