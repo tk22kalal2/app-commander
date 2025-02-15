@@ -2,8 +2,31 @@
 import { Navbar } from "@/components/Navbar";
 import { Footer } from "@/components/Footer";
 import { ScrollArea } from "@/components/ui/scroll-area";
+import { useEffect } from "react";
 
 const Blog = () => {
+  useEffect(() => {
+    // Update document title and meta tags for SEO
+    document.title = "Medical Education Blog - Latest Updates & Study Guides | MedquizAI";
+    
+    // Update meta description
+    const metaDescription = document.querySelector('meta[name="description"]');
+    if (metaDescription) {
+      metaDescription.setAttribute("content", "Access comprehensive medical education resources, study guides, and exam preparation tips for NEET PG, INICET, USMLE, and more. Stay updated with the latest in medical education.");
+    }
+
+    // Update OG tags
+    const ogTitle = document.querySelector('meta[property="og:title"]');
+    const ogDescription = document.querySelector('meta[property="og:description"]');
+    
+    if (ogTitle) {
+      ogTitle.setAttribute("content", "Medical Education Blog - Latest Updates & Study Guides | MedquizAI");
+    }
+    if (ogDescription) {
+      ogDescription.setAttribute("content", "Access comprehensive medical education resources, study guides, and exam preparation tips for NEET PG, INICET, USMLE, and more.");
+    }
+  }, []);
+
   return (
     <div className="min-h-screen bg-medbg dark:bg-gray-900">
       <Navbar />

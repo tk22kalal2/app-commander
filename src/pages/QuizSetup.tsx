@@ -12,6 +12,26 @@ const QuizSetup = () => {
   const [savedConfigs, setSavedConfigs] = useState<any[]>([]);
 
   useEffect(() => {
+    // Update document title and meta tags for SEO
+    document.title = "Medical Quiz Setup - Customize Your Practice Tests | MedquizAI";
+    
+    // Update meta description
+    const metaDescription = document.querySelector('meta[name="description"]');
+    if (metaDescription) {
+      metaDescription.setAttribute("content", "Create customized medical practice tests with our AI-powered quiz system. Choose from various subjects, difficulty levels, and question types for NEET PG, INICET, USMLE preparation.");
+    }
+
+    // Update OG tags
+    const ogTitle = document.querySelector('meta[property="og:title"]');
+    const ogDescription = document.querySelector('meta[property="og:description"]');
+    
+    if (ogTitle) {
+      ogTitle.setAttribute("content", "Medical Quiz Setup - Customize Your Practice Tests | MedquizAI");
+    }
+    if (ogDescription) {
+      ogDescription.setAttribute("content", "Create customized medical practice tests with our AI-powered quiz system. Choose from various subjects and difficulty levels.");
+    }
+
     const checkAuth = async () => {
       const { data: { session } } = await supabase.auth.getSession();
       setIsAuthenticated(!!session);
