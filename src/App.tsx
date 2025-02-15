@@ -23,6 +23,17 @@ const queryClient = new QueryClient({
 });
 
 const App = () => {
+  // Check if we're on a direct HTML page
+  const path = window.location.pathname;
+  if (path === '/privacy-policy.html') {
+    window.location.href = '/privacy-policy';
+    return null;
+  }
+  if (path === '/disclaimer.html') {
+    window.location.href = '/disclaimer';
+    return null;
+  }
+
   return (
     <QueryClientProvider client={queryClient}>
       <TooltipProvider>
