@@ -58,7 +58,6 @@ jobs:
           cp public/404.html dist/
           cp privacy-policy.html dist/
           cp Disclaimer.html dist/disclaimer.html
-          cp public/blog.html dist/
           cp public/quiz-setup.html dist/
           cp -r pages/* dist/pages/
 
