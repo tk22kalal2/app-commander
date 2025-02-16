@@ -27,7 +27,7 @@ export const Navbar = () => {
           <div className="hidden md:flex items-center space-x-4">
             <Button variant="ghost" className="flex items-center gap-2">
               <Book className="h-4 w-4" />
-              <Link to="/blog" className="text-gray-700 dark:text-gray-300">Blog</Link>
+              <a href="/pages/blog.html" className="text-gray-700 dark:text-gray-300">Blog</a>
             </Button>
             <Button variant="ghost" className="flex items-center gap-2">
               <Info className="h-4 w-4" />
@@ -69,7 +69,7 @@ export const Navbar = () => {
       {isMenuOpen && (
         <div className="md:hidden">
           <div className="px-2 pt-2 pb-3 space-y-1 sm:px-3">
-            <Link to="/blog" className="block px-3 py-2 text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-800 rounded-md">Blog</Link>
+            <a href="/pages/blog.html" className="block px-3 py-2 text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-800 rounded-md">Blog</a>
             <Link to="/privacy-policy" className="block px-3 py-2 text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-800 rounded-md">Privacy Policy</Link>
             <Link to="/disclaimer" className="block px-3 py-2 text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-800 rounded-md">Disclaimer</Link>
             <Button 
