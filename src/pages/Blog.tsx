@@ -1,4 +1,3 @@
-
 import { Navbar } from "@/components/Navbar";
 import { Footer } from "@/components/Footer";
 import { ScrollArea } from "@/components/ui/scroll-area";
@@ -87,7 +86,7 @@ const Blog = () => {
           
           {/* Featured Blog Posts */}
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8 mb-12">
-            <div id="neet-pg" className="bg-white dark:bg-gray-800 rounded-lg shadow-lg overflow-hidden scroll-mt-24">
+            <a href="/pages/neetpg.html" id="neet-pg" className="bg-white dark:bg-gray-800 rounded-lg shadow-lg overflow-hidden scroll-mt-24 hover:shadow-xl transition-shadow">
               <img src="/Your paragraph text (1).png" alt="NEET PG 2024 Preparation Guide" className="w-full h-48 object-cover" />
               <div className="p-6">
                 <h2 className="text-xl font-semibold text-medblue dark:text-white mb-3">
@@ -102,7 +101,7 @@ const Blog = () => {
                   <span>Updated March 15, 2024</span>
                 </div>
               </div>
-            </div>
+            </a>
 
             <div id="usmle" className="bg-white dark:bg-gray-800 rounded-lg shadow-lg overflow-hidden scroll-mt-24">
               <img src="/Your paragraph text (2).png" alt="USMLE Step 1 Guide" className="w-full h-48 object-cover" />
