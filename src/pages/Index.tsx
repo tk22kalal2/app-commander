@@ -16,9 +16,9 @@ const Index = () => {
   };
 
   const handleResetApiKey = () => {
-    localStorage.removeItem("GROQ_API_KEY");
+    localStorage.removeItem("groq_api_key");
     toast.success("API key removed successfully");
-    navigate("/auth");
+    navigate("/apikey");
   };
 
   return (
