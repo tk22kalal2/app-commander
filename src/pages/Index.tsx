@@ -1,9 +1,12 @@
 
+import { useState, useEffect } from "react";
+import { ApiKeyInput } from "@/components/ApiKeyInput";
+import { Button } from "@/components/ui/button";
 import { Navbar } from "@/components/Navbar";
 import { Footer } from "@/components/Footer";
 import { Book } from "lucide-react";
-import { Button } from "@/components/ui/button";
 import { useNavigate } from "react-router-dom";
+import { toast } from "sonner";
 
 const Index = () => {
   const navigate = useNavigate();
@@ -12,8 +15,10 @@ const Index = () => {
     navigate("/auth");
   };
 
-  const handleReadMore = () => {
-    navigate("/blog");
+  const handleResetApiKey = () => {
+    localStorage.removeItem("GROQ_API_KEY");
+    toast.success("API key removed successfully");
+    navigate("/auth");
   };
 
   return (
@@ -29,15 +34,19 @@ const Index = () => {
           <p className="text-xl text-gray-600 dark:text-gray-300 mb-8">
             Comprehensive preparation for NEET PG, INICET, FMGE, USMLE, and MBBS with our intelligent quiz platform
           </p>
-          <div className="flex justify-center gap-4">
+          <div className="flex flex-col items-center gap-4">
             <Button 
               className="bg-medteal hover:bg-medteal/90 text-white"
               onClick={handleStartPractice}
             >
               Start Free Practice
             </Button>
-            <Button variant="outline">
-              How It Works
+            <Button 
+              variant="outline"
+              className="bg-white hover:bg-gray-100 text-medblue border-medblue"
+              onClick={handleResetApiKey}
+            >
+              Add New API Key
             </Button>
           </div>
         </div>
@@ -96,7 +105,7 @@ const Index = () => {
               </p>
               <Button 
                 className="w-full bg-medblue hover:bg-medblue/90 text-white"
-                onClick={handleReadMore}
+                onClick={() => navigate('/blog')}
               >
                 Read More
               </Button>
