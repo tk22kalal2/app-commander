@@ -3,7 +3,8 @@ import { Toaster } from "@/components/ui/toaster";
 import { Toaster as Sonner } from "@/components/ui/sonner";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
-import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
+import { BrowserRouter, Routes, Route, Navigate, useLocation } from "react-router-dom";
+import { useEffect } from "react";
 import Index from "./pages/Index";
 import Blog from "./pages/Blog";
 import NotFound from "./pages/NotFound";
@@ -23,6 +24,43 @@ const queryClient = new QueryClient({
   },
 });
 
+// SEO component to update meta tags
+const SEO = () => {
+  const location = useLocation();
+
+  useEffect(() => {
+    // Update meta tags based on current route
+    const path = location.pathname;
+    let title = "Medquiz: AI-Powered Medical Exam Question Bank";
+    let description = "Free medical question bank for NEET PG, INI-CET, FMGE, USMLE, and MBBS preparation.";
+
+    switch (path) {
+      case '/blog':
+        title = "Medical Education Blog - Latest Updates & Study Guides | MedquizAI";
+        description = "Access comprehensive medical education resources, study guides, and exam preparation tips.";
+        break;
+      case '/quiz/setup':
+        title = "Customize Your Medical Quiz | MedquizAI";
+        description = "Create personalized medical practice tests with our AI-powered quiz system.";
+        break;
+      case '/privacy-policy':
+        title = "Privacy Policy | MedquizAI";
+        break;
+      case '/disclaimer':
+        title = "Disclaimer | MedquizAI";
+        break;
+    }
+
+    document.title = title;
+    const metaDescription = document.querySelector('meta[name="description"]');
+    if (metaDescription) {
+      metaDescription.setAttribute("content", description);
+    }
+  }, [location]);
+
+  return null;
+};
+
 const App = () => {
   // Check if we're on a direct HTML page
   const path = window.location.pathname;
@@ -39,6 +77,7 @@ const App = () => {
     <QueryClientProvider client={queryClient}>
       <TooltipProvider>
         <BrowserRouter>
+          <SEO />
           <Routes>
             <Route path="/" element={<Index />} />
             <Route path="/blog" element={<Blog />} />
