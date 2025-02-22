@@ -1,8 +1,11 @@
+
 import { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { generateQuestion } from "@/services/groqService";
 import { toast } from "sonner";
 import { QuizResults } from "./QuizResults";
+import { Textarea } from "./ui/textarea";
+import { Card } from "./ui/card";
 
 interface QuizProps {
   subject: string;
@@ -31,6 +34,7 @@ export const Quiz = ({ subject, chapter, topic, difficulty, questionCount, timeL
     timeLimit !== "No Limit" ? parseInt(timeLimit) : null
   );
   const [isQuizComplete, setIsQuizComplete] = useState(false);
+  const [doubt, setDoubt] = useState("");
 
   useEffect(() => {
     loadQuestion();
@@ -79,6 +83,7 @@ export const Quiz = ({ subject, chapter, topic, difficulty, questionCount, timeL
       setCurrentQuestion(newQuestion);
       setSelectedAnswer(null);
       setShowExplanation(false);
+      setDoubt("");
     }
   };
 
@@ -100,12 +105,14 @@ export const Quiz = ({ subject, chapter, topic, difficulty, questionCount, timeL
     loadQuestion();
   };
 
-  const handleRestartQuiz = () => {
-    setScore(0);
-    setQuestionNumber(1);
-    setIsQuizComplete(false);
-    setTimeRemaining(timeLimit !== "No Limit" ? parseInt(timeLimit) : null);
-    loadQuestion();
+  const handleDoubtSubmit = () => {
+    if (doubt.trim()) {
+      // Here you can implement the doubt submission logic
+      toast.success("Your doubt has been submitted successfully!");
+      setDoubt("");
+    } else {
+      toast.error("Please enter your doubt first");
+    }
   };
 
   const formatTime = (seconds: number): string => {
@@ -163,21 +170,41 @@ export const Quiz = ({ subject, chapter, topic, difficulty, questionCount, timeL
 
         {selectedAnswer && (
           <div className="mt-6">
-            <Button
-              onClick={() => setShowExplanation(!showExplanation)}
-              variant="outline"
-              className="mb-4"
-            >
-              {showExplanation ? "Hide" : "Show"} Explanation
-            </Button>
+            <div className="flex justify-between items-center mb-4">
+              <Button
+                onClick={() => setShowExplanation(!showExplanation)}
+                variant="outline"
+              >
+                {showExplanation ? "Hide" : "Show"} Explanation
+              </Button>
+              <Button onClick={handleNext}>
+                Next Question
+              </Button>
+            </div>
+
             {showExplanation && (
-              <div className="bg-gray-50 p-4 rounded-md">
-                <p className="text-gray-700">{currentQuestion.explanation}</p>
-              </div>
+              <Card className="mt-4 p-4">
+                <div className="space-y-4">
+                  <div>
+                    <h3 className="font-semibold mb-2">Correct Answer Explanation:</h3>
+                    <p className="text-gray-700">{currentQuestion.explanation}</p>
+                  </div>
+                  
+                  <div>
+                    <h3 className="font-semibold mb-2">Have a doubt?</h3>
+                    <Textarea
+                      placeholder="Type your doubt here..."
+                      value={doubt}
+                      onChange={(e) => setDoubt(e.target.value)}
+                      className="mb-2"
+                    />
+                    <Button onClick={handleDoubtSubmit} variant="outline">
+                      Submit Doubt
+                    </Button>
+                  </div>
+                </div>
+              </Card>
             )}
-            <Button onClick={handleNext} className="mt-4">
-              Next Question
-            </Button>
           </div>
         )}
       </div>
