@@ -1,7 +1,6 @@
-
 import { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
-import { generateQuestion } from "@/services/groqService";
+import { generateQuestion, handleDoubt } from "@/services/groqService";
 import { toast } from "sonner";
 import { QuizResults } from "./QuizResults";
 import { Textarea } from "./ui/textarea";
@@ -24,6 +23,11 @@ interface Question {
   subject: string;
 }
 
+interface DoubtMessage {
+  type: 'doubt' | 'answer';
+  content: string;
+}
+
 export const Quiz = ({ subject, chapter, topic, difficulty, questionCount, timeLimit }: QuizProps) => {
   const [currentQuestion, setCurrentQuestion] = useState<Question | null>(null);
   const [selectedAnswer, setSelectedAnswer] = useState<string | null>(null);
@@ -35,6 +39,8 @@ export const Quiz = ({ subject, chapter, topic, difficulty, questionCount, timeL
   );
   const [isQuizComplete, setIsQuizComplete] = useState(false);
   const [doubt, setDoubt] = useState("");
+  const [doubtMessages, setDoubtMessages] = useState<DoubtMessage[]>([]);
+  const [isLoadingAnswer, setIsLoadingAnswer] = useState(false);
 
   useEffect(() => {
     loadQuestion();
@@ -105,14 +111,31 @@ export const Quiz = ({ subject, chapter, topic, difficulty, questionCount, timeL
     loadQuestion();
   };
 
-  const handleDoubtSubmit = () => {
-    if (doubt.trim()) {
-      // Here you can implement the doubt submission logic
-      toast.success("Your doubt has been submitted successfully!");
-      setDoubt("");
-    } else {
+  const handleAskDoubt = async () => {
+    if (!doubt.trim()) {
       toast.error("Please enter your doubt first");
+      return;
     }
+
+    if (!currentQuestion) return;
+
+    setIsLoadingAnswer(true);
+    setDoubtMessages(prev => [...prev, { type: 'doubt', content: doubt }]);
+
+    const answer = await handleDoubt(
+      doubt,
+      currentQuestion.question,
+      currentQuestion.options,
+      currentQuestion.correctAnswer,
+      currentQuestion.explanation
+    );
+
+    if (answer) {
+      setDoubtMessages(prev => [...prev, { type: 'answer', content: answer }]);
+    }
+
+    setDoubt("");
+    setIsLoadingAnswer(false);
   };
 
   const formatTime = (seconds: number): string => {
@@ -153,9 +176,9 @@ export const Quiz = ({ subject, chapter, topic, difficulty, questionCount, timeL
       </div>
 
       <div className="bg-white p-6 rounded-lg shadow-md">
-        <h2 className="text-xl font-semibold mb-4">{currentQuestion.question}</h2>
+        <h2 className="text-xl font-semibold mb-4">{currentQuestion?.question}</h2>
         <div className="space-y-3">
-          {currentQuestion.options.map((option, index) => (
+          {currentQuestion?.options.map((option, index) => (
             <Button
               key={index}
               onClick={() => handleAnswerSelect(option[0])}
@@ -187,20 +210,41 @@ export const Quiz = ({ subject, chapter, topic, difficulty, questionCount, timeL
                 <div className="space-y-4">
                   <div>
                     <h3 className="font-semibold mb-2">Correct Answer Explanation:</h3>
-                    <p className="text-gray-700">{currentQuestion.explanation}</p>
+                    <p className="text-gray-700">{currentQuestion?.explanation}</p>
                   </div>
                   
-                  <div>
-                    <h3 className="font-semibold mb-2">Have a doubt?</h3>
-                    <Textarea
-                      placeholder="Type your doubt here..."
-                      value={doubt}
-                      onChange={(e) => setDoubt(e.target.value)}
-                      className="mb-2"
-                    />
-                    <Button onClick={handleDoubtSubmit} variant="outline">
-                      Submit Doubt
-                    </Button>
+                  <div className="border-t pt-4">
+                    <h3 className="font-semibold mb-2">Ask a Doubt</h3>
+                    <div className="space-y-4">
+                      {doubtMessages.map((message, index) => (
+                        <div
+                          key={index}
+                          className={`p-3 rounded-lg ${
+                            message.type === 'doubt'
+                              ? 'bg-blue-50 ml-auto max-w-[80%]'
+                              : 'bg-gray-50 mr-auto max-w-[80%]'
+                          }`}
+                        >
+                          <p className="text-sm">{message.content}</p>
+                        </div>
+                      ))}
+                      
+                      <div className="flex gap-2">
+                        <Textarea
+                          placeholder="Ask any doubt about the question, options, or explanation..."
+                          value={doubt}
+                          onChange={(e) => setDoubt(e.target.value)}
+                          className="flex-1"
+                        />
+                        <Button 
+                          onClick={handleAskDoubt}
+                          disabled={isLoadingAnswer}
+                          className="self-end"
+                        >
+                          Ask Doubt
+                        </Button>
+                      </div>
+                    </div>
                   </div>
                 </div>
               </Card>

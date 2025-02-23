@@ -1,4 +1,3 @@
-
 import { toast } from "sonner";
 
 interface GroqResponse {
@@ -121,6 +120,79 @@ export const generateQuestion = async (scope: string, difficulty: string = 'easy
   } catch (error: any) {
     console.error("Error generating question:", error);
     toast.error(error.message || "Failed to generate question. Please check your API key and try again.");
+    return null;
+  }
+};
+
+export const handleDoubt = async (
+  doubt: string,
+  question: string,
+  options: string[],
+  correctAnswer: string,
+  explanation: string
+): Promise<string | null> => {
+  const apiKey = localStorage.getItem("groq_api_key");
+  
+  if (!apiKey) {
+    toast.error("Please enter your Groq API key first");
+    return null;
+  }
+
+  const cleanedApiKey = apiKey.trim();
+
+  try {
+    console.log("Handling doubt:", doubt);
+    console.log("Making request to Groq API for doubt resolution...");
+    
+    const response = await fetch('https://api.groq.com/openai/v1/chat/completions', {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        "Authorization": `Bearer ${cleanedApiKey}`
+      },
+      body: JSON.stringify({
+        model: "mixtral-8x7b-32768",
+        messages: [
+          {
+            role: "system",
+            content: "You are a medical education expert who helps students understand concepts clearly. Provide detailed, accurate explanations for their doubts about medical questions."
+          },
+          {
+            role: "user",
+            content: `Context:
+Question: ${question}
+Options: ${options.join('\n')}
+Correct Answer: ${correctAnswer}
+Explanation: ${explanation}
+
+Student's Doubt: ${doubt}
+
+Please provide a clear, detailed explanation addressing this doubt. Include relevant medical concepts and clinical correlations when appropriate.`
+          }
+        ],
+        temperature: 0.7,
+        max_tokens: 1024
+      }),
+    });
+
+    if (!response.ok) {
+      const errorData = await response.json();
+      console.error("API Error details:", errorData);
+      throw new Error(errorData.error?.message || `API request failed: ${response.statusText}`);
+    }
+
+    const data = await response.json();
+    console.log("Groq API response received for doubt");
+    
+    if (!data.choices?.[0]?.message?.content) {
+      throw new Error("Invalid response format from API");
+    }
+
+    return data.choices[0].message.content;
+
+  } catch (error: any) {
+    console.error("Error handling doubt:", error);
+    toast.error(error.message || "Failed to get answer. Please try again.");
     return null;
   }
 };
