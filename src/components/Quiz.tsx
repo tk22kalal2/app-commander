@@ -90,6 +90,7 @@ export const Quiz = ({ subject, chapter, topic, difficulty, questionCount, timeL
       setSelectedAnswer(null);
       setShowExplanation(false);
       setDoubt("");
+      setDoubtMessages([]);
     }
   };
 
@@ -108,6 +109,7 @@ export const Quiz = ({ subject, chapter, topic, difficulty, questionCount, timeL
       return;
     }
     setQuestionNumber(prev => prev + 1);
+    setDoubtMessages([]);
     loadQuestion();
   };
 
