@@ -1,0 +1,13 @@
+
+# Allow Google AdSense crawler
+User-agent: Mediapartners-Google
+Allow: /
+
+# Allow Google Display Ads Bot
+User-agent: Google-Display-Ads-Bot
+Allow: /
+
+# Allow all other crawlers
+User-agent: *
+Allow: /
+Disallow: /api/
