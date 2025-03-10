@@ -17,8 +17,24 @@
     <base href="/quiz/" />
     <meta property="og:image" content="/og-image.png" />
 
-    <!-- Google AdSense -->
-    <script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-5920367457745298" crossorigin="anonymous"></script>
+    <!-- Google AdMob for Mobile App -->
+    <script type="text/javascript">
+      window.admobAppId = "ca-app-pub-5920367457745298~6087552730";
+      
+      // Check if running in mobile app context
+      const isMobileApp = window.location.href.includes('capacitor://') || 
+                         window.location.href.includes('app://') ||
+                         document.URL.includes('app://') ||
+                         navigator.userAgent.includes('Median');
+      
+      // Initialize AdMob if this is a mobile environment
+      document.addEventListener('deviceready', function() {
+        if (isMobileApp && window.admob) {
+          window.admob.initialize(window.admobAppId);
+          console.log('AdMob initialized with ID:', window.admobAppId);
+        }
+      }, false);
+    </script>
     
     <!-- GitHub Pages SPA Redirect -->
     <script type="text/javascript">
@@ -33,31 +49,9 @@
         }
       }(window.location))
     </script>
-
-    <!-- AdSense Auto Ads Code -->
-    <script>
-     window.onload = function() {
-       (adsbygoogle = window.adsbygoogle || []).push({});
-     };
-    </script>
   </head>
   <body>
     <div id="root"></div>
-    <!-- Ensure ads can be loaded -->
-    <script>
-      if(window.location.pathname.includes('/quiz/setup')) {
-        const adContainer = document.createElement('div');
-        adContainer.innerHTML = `
-          <ins class="adsbygoogle"
-               style="display:block"
-               data-ad-client="ca-pub-5920367457745298"
-               data-ad-slot="AUTO"
-               data-ad-format="auto"
-               data-full-width-responsive="true"></ins>
-        `;
-        document.body.appendChild(adContainer);
-      }
-    </script>
     <script type="module" src="/src/main.tsx"></script>
   </body>
 </html>

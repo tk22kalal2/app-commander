@@ -1,3 +1,4 @@
+
 import { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { generateQuestion, handleDoubt } from "@/services/groqService";
@@ -41,9 +42,13 @@ export const Quiz = ({ subject, chapter, topic, difficulty, questionCount, timeL
   const [doubt, setDoubt] = useState("");
   const [doubtMessages, setDoubtMessages] = useState<DoubtMessage[]>([]);
   const [isLoadingAnswer, setIsLoadingAnswer] = useState(false);
+  const [adCounter, setAdCounter] = useState(0);
 
   useEffect(() => {
     loadQuestion();
+    
+    // Initialize AdMob for mobile apps
+    initializeAdMob();
   }, []);
 
   useEffect(() => {
@@ -62,6 +67,72 @@ export const Quiz = ({ subject, chapter, topic, difficulty, questionCount, timeL
       return () => clearInterval(timer);
     }
   }, [timeRemaining]);
+
+  const initializeAdMob = () => {
+    // Check if running in mobile app context
+    const isMobileApp = window.location.href.includes('capacitor://') || 
+                     window.location.href.includes('app://') ||
+                     document.URL.includes('app://') ||
+                     navigator.userAgent.includes('Median');
+    
+    if (isMobileApp && window.admob) {
+      try {
+        // Create banner ad
+        window.admob.createBannerView({
+          adSize: window.admob.AD_SIZE.SMART_BANNER,
+          adId: 'ca-app-pub-5920367457745298/1075487452' // Replace with your actual banner ad unit ID
+        });
+        
+        // Show banner ad
+        window.admob.showBannerAd(true);
+        console.log('AdMob banner initialized');
+      } catch (error) {
+        console.error('AdMob initialization error:', error);
+      }
+    }
+  };
+
+  const showInterstitialAd = () => {
+    // Check if running in mobile app context
+    const isMobileApp = window.location.href.includes('capacitor://') || 
+                     window.location.href.includes('app://') ||
+                     document.URL.includes('app://') ||
+                     navigator.userAgent.includes('Median');
+    
+    if (isMobileApp && window.admob) {
+      try {
+        // Prepare interstitial ad
+        window.admob.prepareInterstitial({
+          adId: 'ca-app-pub-5920367457745298/6136242451', // Replace with your actual interstitial ad unit ID
+          autoShow: true
+        });
+        console.log('AdMob interstitial shown');
+      } catch (error) {
+        console.error('AdMob interstitial error:', error);
+      }
+    }
+  };
+
+  const showRewardedAd = () => {
+    // Check if running in mobile app context
+    const isMobileApp = window.location.href.includes('capacitor://') || 
+                     window.location.href.includes('app://') ||
+                     document.URL.includes('app://') ||
+                     navigator.userAgent.includes('Median');
+    
+    if (isMobileApp && window.admob && window.admob.prepareRewardVideoAd) {
+      try {
+        // Prepare rewarded ad
+        window.admob.prepareRewardVideoAd({
+          adId: 'ca-app-pub-5920367457745298/4823161085', // Replace with your actual rewarded ad unit ID
+          autoShow: true
+        });
+        console.log('AdMob rewarded ad shown');
+      } catch (error) {
+        console.error('AdMob rewarded ad error:', error);
+      }
+    }
+  };
 
   const getOptionStyle = (option: string) => {
     if (!selectedAnswer) {
@@ -100,14 +171,29 @@ export const Quiz = ({ subject, chapter, topic, difficulty, questionCount, timeL
       if (answer === currentQuestion?.correctAnswer) {
         setScore(prev => prev + 1);
       }
+      
+      // Show a rewarded ad occasionally when user answers
+      const shouldShowAd = Math.random() < 0.2; // 20% chance
+      if (shouldShowAd) {
+        showRewardedAd();
+      }
     }
   };
 
   const handleNext = () => {
+    // Increment ad counter and show interstitial ad every 3 questions
+    const newAdCounter = adCounter + 1;
+    setAdCounter(newAdCounter);
+    
+    if (newAdCounter % 3 === 0) {
+      showInterstitialAd();
+    }
+    
     if (questionCount !== "No Limit" && questionNumber >= parseInt(questionCount)) {
       setIsQuizComplete(true);
       return;
     }
+    
     setQuestionNumber(prev => prev + 1);
     setDoubtMessages([]);
     loadQuestion();
@@ -138,6 +224,12 @@ export const Quiz = ({ subject, chapter, topic, difficulty, questionCount, timeL
 
     setDoubt("");
     setIsLoadingAnswer(false);
+    
+    // Show reward ad after asking a doubt (30% chance)
+    const shouldShowAd = Math.random() < 0.3;
+    if (shouldShowAd) {
+      showRewardedAd();
+    }
   };
 
   const formatTime = (seconds: number): string => {
@@ -147,6 +239,9 @@ export const Quiz = ({ subject, chapter, topic, difficulty, questionCount, timeL
   };
 
   if (isQuizComplete) {
+    // Show an interstitial ad when quiz completes
+    showInterstitialAd();
+    
     return (
       <QuizResults 
         score={score} 
@@ -257,3 +352,25 @@ export const Quiz = ({ subject, chapter, topic, difficulty, questionCount, timeL
     </div>
   );
 };
+
+// Add types for AdMob
+declare global {
+  interface Window {
+    admob?: {
+      initialize: (appId: string) => void;
+      AD_SIZE: {
+        SMART_BANNER: string;
+        LARGE_BANNER: string;
+        BANNER: string;
+        MEDIUM_RECTANGLE: string;
+        FULL_BANNER: string;
+        LEADERBOARD: string;
+      };
+      createBannerView: (options: any) => void;
+      showBannerAd: (show: boolean) => void;
+      prepareInterstitial: (options: any) => void;
+      prepareRewardVideoAd: (options: any) => void;
+    };
+    admobAppId: string;
+  }
+}
