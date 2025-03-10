@@ -1,3 +1,4 @@
+
 import { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { generateQuestion, handleDoubt } from "@/services/groqService";
@@ -8,7 +9,6 @@ import { Card } from "./ui/card";
 import { 
   showBannerAd, 
   showInterstitialAd, 
-  showRewardedAd, 
   showNativeAd 
 } from "@/utils/admobUtils";
 

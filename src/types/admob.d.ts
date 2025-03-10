@@ -14,7 +14,7 @@ declare global {
       createBannerView: (options: any) => void;
       showBannerAd: (show: boolean) => void;
       prepareInterstitial: (options: any) => void;
-      prepareRewardVideoAd: (options: any) => void;
+      prepareRewardVideoAd?: (options: any) => void;
       showNativeAd?: (options: any) => void;
       showAppOpenAd?: (options: any) => void;
     };
@@ -28,4 +28,4 @@ declare global {
   }
 }
 
-export {};
+export {}; // This file needs to be a module
