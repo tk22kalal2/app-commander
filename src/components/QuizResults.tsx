@@ -1,10 +1,9 @@
-
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Trophy } from "lucide-react";
 import { useEffect, useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { useNavigate } from "react-router-dom";
-import { showInterstitialAd, showBannerAd } from "@/utils/admobUtils";
+import { showInterstitialAd, showBannerAd } from '@/utils/admobUtils';
 
 interface QuizResultsProps {
   score: number;

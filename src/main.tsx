@@ -2,7 +2,7 @@
 import { createRoot } from 'react-dom/client'
 import App from './App.tsx'
 import './index.css'
-import { initializeAdMob, showAppOpenAd } from './utils/admobUtils'
+import { initializeAdMob, showAppOpenAd } from '@/utils/admobUtils'
 
 // Initialize AdMob for mobile apps
 if (typeof window !== 'undefined') {
