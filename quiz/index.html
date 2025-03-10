@@ -27,6 +27,14 @@
                          document.URL.includes('app://') ||
                          navigator.userAgent.includes('Median');
       
+      // AdMob Ad Unit IDs
+      window.admobAdUnits = {
+        banner: "ca-app-pub-5920367457745298/9145499918",
+        interstitial: "ca-app-pub-5920367457745298/3026544626",
+        native: "ca-app-pub-5920367457745298/5613147695",
+        appOpen: "ca-app-pub-5920367457745298/7296993946"
+      };
+      
       // Initialize AdMob if this is a mobile environment
       document.addEventListener('deviceready', function() {
         if (isMobileApp && window.admob) {

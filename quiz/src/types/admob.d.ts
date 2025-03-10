@@ -1,37 +1,31 @@
 
-interface AdMobOptions {
-  adSize?: string;
-  adId?: string;
-  position?: number;
-  autoShow?: boolean;
-  x?: number;
-  y?: number;
-  isTesting?: boolean;
-  bannerAtTop?: boolean;
-  adInterval?: number;
-  overlap?: boolean;
+declare global {
+  interface Window {
+    admob?: {
+      initialize: (appId: string) => void;
+      AD_SIZE: {
+        SMART_BANNER: string;
+        LARGE_BANNER: string;
+        BANNER: string;
+        MEDIUM_RECTANGLE: string;
+        FULL_BANNER: string;
+        LEADERBOARD: string;
+      };
+      createBannerView: (options: any) => void;
+      showBannerAd: (show: boolean) => void;
+      prepareInterstitial: (options: any) => void;
+      prepareRewardVideoAd?: (options: any) => void;
+      showNativeAd?: (options: any) => void;
+      showAppOpenAd?: (options: any) => void;
+    };
+    admobAppId: string;
+    admobAdUnits?: {
+      banner: string;
+      interstitial: string;
+      native: string;
+      appOpen: string;
+    };
+  }
 }
 
-interface Window {
-  admob?: {
-    initialize: (appId: string) => void;
-    AD_SIZE: {
-      SMART_BANNER: string;
-      BANNER: string;
-      MEDIUM_RECTANGLE: string;
-      FULL_BANNER: string;
-      LEADERBOARD: string;
-      SKYSCRAPER: string;
-      CUSTOM: string;
-    };
-    createBannerView: (options: AdMobOptions) => void;
-    showBannerAd: (show: boolean) => void;
-    destroyBannerView: () => void;
-    requestInterstitialAd: (options: AdMobOptions) => void;
-    prepareInterstitial: (options: AdMobOptions) => void;
-    showInterstitialAd: () => void;
-    prepareRewardVideoAd: (options: AdMobOptions) => void;
-    showRewardVideoAd: () => void;
-  };
-  admobAppId: string;
-}
+export {}; // This file needs to be a module

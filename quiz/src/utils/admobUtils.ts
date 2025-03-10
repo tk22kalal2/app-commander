@@ -24,13 +24,13 @@ export const initializeAdMob = (): void => {
 };
 
 // Create and show banner ad
-export const showBannerAd = (): void => {
-  if (isMobileApp() && window.admob) {
+export const showBannerAd = (position: number = 8): void => {
+  if (isMobileApp() && window.admob && window.admobAdUnits) {
     try {
       window.admob.createBannerView({
         adSize: window.admob.AD_SIZE.SMART_BANNER,
-        adId: 'ca-app-pub-5920367457745298/1075487452', // Banner ad unit ID
-        position: 8, // Bottom position
+        adId: window.admobAdUnits.banner,
+        position: position, // 8 = bottom, 2 = top
         autoShow: true
       });
       console.log('Banner ad displayed');
@@ -42,10 +42,10 @@ export const showBannerAd = (): void => {
 
 // Show interstitial ad
 export const showInterstitialAd = (): void => {
-  if (isMobileApp() && window.admob) {
+  if (isMobileApp() && window.admob && window.admobAdUnits) {
     try {
       window.admob.prepareInterstitial({
-        adId: 'ca-app-pub-5920367457745298/6136242451', // Interstitial ad unit ID
+        adId: window.admobAdUnits.interstitial,
         autoShow: true
       });
       console.log('Interstitial ad displayed');
@@ -55,17 +55,39 @@ export const showInterstitialAd = (): void => {
   }
 };
 
-// Show rewarded video ad
-export const showRewardedAd = (): void => {
-  if (isMobileApp() && window.admob && window.admob.prepareRewardVideoAd) {
+// Show native ad
+export const showNativeAd = (containerId: string): void => {
+  if (isMobileApp() && window.admob && window.admobAdUnits) {
     try {
-      window.admob.prepareRewardVideoAd({
-        adId: 'ca-app-pub-5920367457745298/4823161085', // Rewarded ad unit ID
-        autoShow: true
-      });
-      console.log('Rewarded ad displayed');
+      // This implementation depends on the AdMob plugin's native ad support
+      // You may need to adjust based on the plugin's API
+      if (window.admob.showNativeAd) {
+        window.admob.showNativeAd({
+          adId: window.admobAdUnits.native,
+          containerId: containerId
+        });
+        console.log('Native ad displayed');
+      }
     } catch (error) {
-      console.error('Error showing rewarded ad:', error);
+      console.error('Error showing native ad:', error);
+    }
+  }
+};
+
+// Show app open ad
+export const showAppOpenAd = (): void => {
+  if (isMobileApp() && window.admob && window.admobAdUnits) {
+    try {
+      // This implementation depends on the AdMob plugin's app open ad support
+      // You may need to adjust based on the plugin's API
+      if (window.admob.showAppOpenAd) {
+        window.admob.showAppOpenAd({
+          adId: window.admobAdUnits.appOpen
+        });
+        console.log('App open ad displayed');
+      }
+    } catch (error) {
+      console.error('Error showing app open ad:', error);
     }
   }
 };

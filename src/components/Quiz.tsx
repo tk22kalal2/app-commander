@@ -6,6 +6,12 @@ import { toast } from "sonner";
 import { QuizResults } from "./QuizResults";
 import { Textarea } from "./ui/textarea";
 import { Card } from "./ui/card";
+import { 
+  showBannerAd, 
+  showInterstitialAd, 
+  showRewardedAd, 
+  showNativeAd 
+} from "@/utils/admobUtils";
 
 interface QuizProps {
   subject: string;
@@ -43,13 +49,45 @@ export const Quiz = ({ subject, chapter, topic, difficulty, questionCount, timeL
   const [doubtMessages, setDoubtMessages] = useState<DoubtMessage[]>([]);
   const [isLoadingAnswer, setIsLoadingAnswer] = useState(false);
   const [adCounter, setAdCounter] = useState(0);
+  const [nativeAdShown, setNativeAdShown] = useState(false);
 
   useEffect(() => {
     loadQuestion();
     
-    // Initialize AdMob for mobile apps
-    initializeAdMob();
+    // Show banner ad on component mount
+    showBannerAd(8); // Show at bottom
+
+    // Create container for native ad
+    createNativeAdContainer();
+
+    return () => {
+      // Clean up code if needed
+    };
   }, []);
+
+  const createNativeAdContainer = () => {
+    // Create a container for native ads if it doesn't exist
+    if (!document.getElementById('native-ad-container')) {
+      const container = document.createElement('div');
+      container.id = 'native-ad-container';
+      container.style.width = '100%';
+      container.style.minHeight = '100px';
+      container.style.margin = '20px 0';
+      container.style.display = 'none'; // Hidden by default
+      document.body.appendChild(container);
+    }
+  };
+
+  const showNativeAdIfNeeded = () => {
+    if (!nativeAdShown) {
+      const container = document.getElementById('native-ad-container');
+      if (container) {
+        container.style.display = 'block';
+        showNativeAd('native-ad-container');
+        setNativeAdShown(true);
+      }
+    }
+  };
 
   useEffect(() => {
     if (timeRemaining !== null && timeRemaining > 0) {
@@ -58,6 +96,8 @@ export const Quiz = ({ subject, chapter, topic, difficulty, questionCount, timeL
           if (prev === null || prev <= 1) {
             clearInterval(timer);
             toast.error("Time's up!");
+            // Show an interstitial ad when time's up
+            showInterstitialAd();
             return 0;
           }
           return prev - 1;
@@ -67,72 +107,6 @@ export const Quiz = ({ subject, chapter, topic, difficulty, questionCount, timeL
       return () => clearInterval(timer);
     }
   }, [timeRemaining]);
-
-  const initializeAdMob = () => {
-    // Check if running in mobile app context
-    const isMobileApp = window.location.href.includes('capacitor://') || 
-                     window.location.href.includes('app://') ||
-                     document.URL.includes('app://') ||
-                     navigator.userAgent.includes('Median');
-    
-    if (isMobileApp && window.admob) {
-      try {
-        // Create banner ad
-        window.admob.createBannerView({
-          adSize: window.admob.AD_SIZE.SMART_BANNER,
-          adId: 'ca-app-pub-5920367457745298/1075487452' // Replace with your actual banner ad unit ID
-        });
-        
-        // Show banner ad
-        window.admob.showBannerAd(true);
-        console.log('AdMob banner initialized');
-      } catch (error) {
-        console.error('AdMob initialization error:', error);
-      }
-    }
-  };
-
-  const showInterstitialAd = () => {
-    // Check if running in mobile app context
-    const isMobileApp = window.location.href.includes('capacitor://') || 
-                     window.location.href.includes('app://') ||
-                     document.URL.includes('app://') ||
-                     navigator.userAgent.includes('Median');
-    
-    if (isMobileApp && window.admob) {
-      try {
-        // Prepare interstitial ad
-        window.admob.prepareInterstitial({
-          adId: 'ca-app-pub-5920367457745298/6136242451', // Replace with your actual interstitial ad unit ID
-          autoShow: true
-        });
-        console.log('AdMob interstitial shown');
-      } catch (error) {
-        console.error('AdMob interstitial error:', error);
-      }
-    }
-  };
-
-  const showRewardedAd = () => {
-    // Check if running in mobile app context
-    const isMobileApp = window.location.href.includes('capacitor://') || 
-                     window.location.href.includes('app://') ||
-                     document.URL.includes('app://') ||
-                     navigator.userAgent.includes('Median');
-    
-    if (isMobileApp && window.admob && window.admob.prepareRewardVideoAd) {
-      try {
-        // Prepare rewarded ad
-        window.admob.prepareRewardVideoAd({
-          adId: 'ca-app-pub-5920367457745298/4823161085', // Replace with your actual rewarded ad unit ID
-          autoShow: true
-        });
-        console.log('AdMob rewarded ad shown');
-      } catch (error) {
-        console.error('AdMob rewarded ad error:', error);
-      }
-    }
-  };
 
   const getOptionStyle = (option: string) => {
     if (!selectedAnswer) {
@@ -170,12 +144,11 @@ export const Quiz = ({ subject, chapter, topic, difficulty, questionCount, timeL
       setSelectedAnswer(answer);
       if (answer === currentQuestion?.correctAnswer) {
         setScore(prev => prev + 1);
-      }
-      
-      // Show a rewarded ad occasionally when user answers
-      const shouldShowAd = Math.random() < 0.2; // 20% chance
-      if (shouldShowAd) {
-        showRewardedAd();
+      } else {
+        // Show native ad when user answers incorrectly (50% chance)
+        if (Math.random() < 0.5) {
+          showNativeAdIfNeeded();
+        }
       }
     }
   };
@@ -225,10 +198,10 @@ export const Quiz = ({ subject, chapter, topic, difficulty, questionCount, timeL
     setDoubt("");
     setIsLoadingAnswer(false);
     
-    // Show reward ad after asking a doubt (30% chance)
-    const shouldShowAd = Math.random() < 0.3;
+    // Show interstitial ad after asking a doubt (40% chance)
+    const shouldShowAd = Math.random() < 0.4;
     if (shouldShowAd) {
-      showRewardedAd();
+      showInterstitialAd();
     }
   };
 
@@ -292,7 +265,13 @@ export const Quiz = ({ subject, chapter, topic, difficulty, questionCount, timeL
           <div className="mt-6">
             <div className="flex justify-between items-center mb-4">
               <Button
-                onClick={() => setShowExplanation(!showExplanation)}
+                onClick={() => {
+                  setShowExplanation(!showExplanation);
+                  // Show native ad when showing explanation (30% chance)
+                  if (!showExplanation && Math.random() < 0.3) {
+                    showNativeAdIfNeeded();
+                  }
+                }}
                 variant="outline"
               >
                 {showExplanation ? "Hide" : "Show"} Explanation
@@ -370,7 +349,15 @@ declare global {
       showBannerAd: (show: boolean) => void;
       prepareInterstitial: (options: any) => void;
       prepareRewardVideoAd: (options: any) => void;
+      showNativeAd?: (options: any) => void;
+      showAppOpenAd?: (options: any) => void;
     };
     admobAppId: string;
+    admobAdUnits?: {
+      banner: string;
+      interstitial: string;
+      native: string;
+      appOpen: string;
+    };
   }
 }
