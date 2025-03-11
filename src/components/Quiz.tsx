@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { generateQuestion, handleDoubt } from "@/services/groqService";
@@ -53,14 +52,18 @@ export const Quiz = ({ subject, chapter, topic, difficulty, questionCount, timeL
   useEffect(() => {
     loadQuestion();
     
-    // Show banner ad on component mount
-    showBannerAd(8); // Show at bottom
+    console.log("Quiz component mounted - showing banner ad");
+    // Show banner ad on component mount with 1s delay to ensure DOM is ready
+    setTimeout(() => {
+      showBannerAd(8); // Show at bottom
+    }, 1000);
 
     // Create container for native ad
     createNativeAdContainer();
 
     return () => {
       // Clean up code if needed
+      console.log("Quiz component unmounting");
     };
   }, []);
 
@@ -144,6 +147,7 @@ export const Quiz = ({ subject, chapter, topic, difficulty, questionCount, timeL
       if (answer === currentQuestion?.correctAnswer) {
         setScore(prev => prev + 1);
       } else {
+        console.log("Incorrect answer - showing native ad (50% chance)");
         // Show native ad when user answers incorrectly (50% chance)
         if (Math.random() < 0.5) {
           showNativeAdIfNeeded();
@@ -158,6 +162,7 @@ export const Quiz = ({ subject, chapter, topic, difficulty, questionCount, timeL
     setAdCounter(newAdCounter);
     
     if (newAdCounter % 3 === 0) {
+      console.log("Showing interstitial ad after 3 questions");
       showInterstitialAd();
     }
     
@@ -200,6 +205,7 @@ export const Quiz = ({ subject, chapter, topic, difficulty, questionCount, timeL
     // Show interstitial ad after asking a doubt (40% chance)
     const shouldShowAd = Math.random() < 0.4;
     if (shouldShowAd) {
+      console.log("Showing interstitial ad after asking doubt (40% chance)");
       showInterstitialAd();
     }
   };
@@ -212,6 +218,7 @@ export const Quiz = ({ subject, chapter, topic, difficulty, questionCount, timeL
 
   if (isQuizComplete) {
     // Show an interstitial ad when quiz completes
+    console.log("Quiz complete - showing interstitial ad");
     showInterstitialAd();
     
     return (
@@ -331,7 +338,6 @@ export const Quiz = ({ subject, chapter, topic, difficulty, questionCount, timeL
   );
 };
 
-// Add types for AdMob
 declare global {
   interface Window {
     admob?: {

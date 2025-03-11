@@ -13,7 +13,8 @@ export const isMobileApp = (): boolean => {
 
 // Initialize AdMob
 export const initializeAdMob = (): void => {
-  if (isMobileApp() && window.admob) {
+  console.log('Initializing AdMob');
+  if (window.admob) {
     try {
       // Use the actual AdMob app ID
       const appId = 'ca-app-pub-5920367457745298~6087552730';
@@ -27,15 +28,23 @@ export const initializeAdMob = (): void => {
       
       window.admob.initialize(appId);
       console.log('AdMob initialized with ID:', appId);
+      
+      // Show an initial banner ad
+      setTimeout(() => {
+        showBannerAd(8);
+      }, 2000);
     } catch (error) {
       console.error('Error initializing AdMob:', error);
     }
+  } else {
+    console.log('AdMob not available');
   }
 };
 
 // Create and show banner ad
 export const showBannerAd = (position: number = 8): void => {
-  if (isMobileApp() && window.admob && window.admobAdUnits) {
+  console.log('Attempting to show banner ad');
+  if (window.admob && window.admobAdUnits) {
     try {
       window.admob.createBannerView({
         adSize: window.admob.AD_SIZE.SMART_BANNER,
@@ -47,12 +56,15 @@ export const showBannerAd = (position: number = 8): void => {
     } catch (error) {
       console.error('Error showing banner ad:', error);
     }
+  } else {
+    console.log('AdMob or ad units not available for banner');
   }
 };
 
 // Show interstitial ad
 export const showInterstitialAd = (): void => {
-  if (isMobileApp() && window.admob && window.admobAdUnits) {
+  console.log('Attempting to show interstitial ad');
+  if (window.admob && window.admobAdUnits) {
     try {
       window.admob.prepareInterstitial({
         adId: window.admobAdUnits.interstitial,
@@ -62,12 +74,15 @@ export const showInterstitialAd = (): void => {
     } catch (error) {
       console.error('Error showing interstitial ad:', error);
     }
+  } else {
+    console.log('AdMob or ad units not available for interstitial');
   }
 };
 
 // Show native ad
 export const showNativeAd = (containerId: string): void => {
-  if (isMobileApp() && window.admob && window.admobAdUnits) {
+  console.log('Attempting to show native ad in', containerId);
+  if (window.admob && window.admobAdUnits) {
     try {
       if (window.admob.showNativeAd) {
         window.admob.showNativeAd({
@@ -75,37 +90,49 @@ export const showNativeAd = (containerId: string): void => {
           containerId: containerId
         });
         console.log('Native ad displayed');
+      } else {
+        console.log('Native ad function not available');
       }
     } catch (error) {
       console.error('Error showing native ad:', error);
     }
+  } else {
+    console.log('AdMob or ad units not available for native');
   }
 };
 
 // Show app open ad
 export const showAppOpenAd = (): void => {
-  if (isMobileApp() && window.admob && window.admobAdUnits) {
+  console.log('Attempting to show app open ad');
+  if (window.admob && window.admobAdUnits) {
     try {
       if (window.admob.showAppOpenAd) {
         window.admob.showAppOpenAd({
           adId: window.admobAdUnits.appOpen
         });
         console.log('App open ad displayed');
+      } else {
+        console.log('App open ad function not available');
       }
     } catch (error) {
       console.error('Error showing app open ad:', error);
     }
+  } else {
+    console.log('AdMob or ad units not available for app open');
   }
 };
 
 // Hide banner ad
 export const hideBannerAd = (): void => {
-  if (isMobileApp() && window.admob) {
+  console.log('Attempting to hide banner ad');
+  if (window.admob) {
     try {
       window.admob.showBannerAd(false);
       console.log('Banner ad hidden');
     } catch (error) {
       console.error('Error hiding banner ad:', error);
     }
+  } else {
+    console.log('AdMob not available to hide banner');
   }
 };
