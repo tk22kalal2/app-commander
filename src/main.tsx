@@ -13,11 +13,15 @@ if (typeof window !== 'undefined') {
                         document.URL.includes('app://') ||
                         navigator.userAgent.includes('Median');
     
-    console.log('Environment check:', { isMobileApp, userAgent: navigator.userAgent });
+    console.log('Environment check in main.tsx:', { 
+      isMobileApp, 
+      userAgent: navigator.userAgent,
+      href: window.location.href 
+    });
     
     if (isMobileApp) {
       // Only initialize AdMob in mobile environments
-      console.log('Initializing AdMob for mobile app');
+      console.log('Initializing AdMob for mobile app from main.tsx');
       initializeAdMob();
       
       // Show app open ad on initial load with a delay
@@ -25,7 +29,7 @@ if (typeof window !== 'undefined') {
         showAppOpenAd();
       }, 2000);
     } else {
-      console.log('Skipping AdMob initialization - not in mobile app environment');
+      console.log('Skipping AdMob initialization in main.tsx - not in mobile app environment');
     }
   });
 }

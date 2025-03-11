@@ -1,3 +1,4 @@
+
 /**
  * Utility functions for Google AdMob integration
  */
@@ -9,13 +10,17 @@ export const isMobileApp = (): boolean => {
          document.URL.includes('app://') ||
          navigator.userAgent.includes('Median');
   
-  console.log('isMobileApp check:', { isApp, url: window.location.href, userAgent: navigator.userAgent });
+  console.log('isMobileApp check:', { 
+    isApp, 
+    url: window.location.href, 
+    userAgent: navigator.userAgent 
+  });
   return isApp;
 };
 
 // Initialize AdMob
 export const initializeAdMob = (): void => {
-  console.log('Initializing AdMob');
+  console.log('Initializing AdMob in admobUtils.ts');
   
   if (!isMobileApp()) {
     console.log('Not in a mobile app environment, skipping AdMob initialization');
@@ -24,17 +29,22 @@ export const initializeAdMob = (): void => {
   
   if (window.admob) {
     try {
-      // Use the actual AdMob app ID
-      const appId = 'ca-app-pub-5920367457745298~6087552730';
-      window.admobAppId = appId;
-      window.admobAdUnits = {
-        banner: 'ca-app-pub-5920367457745298/9145499918',
-        interstitial: 'ca-app-pub-5920367457745298/3026544626',
-        native: 'ca-app-pub-5920367457745298/5613147695',
-        appOpen: 'ca-app-pub-5920367457745298/7296993946'
-      };
+      // If admobAppId is already defined in the window object, use that
+      const appId = window.admobAppId || 'ca-app-pub-5920367457745298~6087552730';
+      
+      // If ad units are not defined, define them
+      if (!window.admobAdUnits) {
+        window.admobAdUnits = {
+          banner: 'ca-app-pub-5920367457745298/9145499918',
+          interstitial: 'ca-app-pub-5920367457745298/3026544626',
+          native: 'ca-app-pub-5920367457745298/5613147695',
+          appOpen: 'ca-app-pub-5920367457745298/7296993946'
+        };
+      }
       
       console.log('AdMob plugin found, initializing with ID:', appId);
+      console.log('AdMob ad units:', window.admobAdUnits);
+      
       window.admob.initialize(appId);
       console.log('AdMob initialized successfully');
       

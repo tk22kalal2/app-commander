@@ -1,3 +1,4 @@
+
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Trophy } from "lucide-react";
 import { useEffect, useState } from "react";
@@ -48,11 +49,15 @@ export const QuizResults = ({
     fetchUserName();
     
     // Show banner ad at bottom of results page
-    showBannerAd(8);
+    setTimeout(() => {
+      console.log('QuizResults - showing banner ad');
+      showBannerAd(8);
+    }, 500);
     
     // 80% chance to show interstitial ad when results are displayed
     if (Math.random() < 0.8) {
       setTimeout(() => {
+        console.log('QuizResults - showing interstitial ad');
         showInterstitialAd();
       }, 1500); // Slight delay for better user experience
     }
@@ -83,6 +88,7 @@ export const QuizResults = ({
             <button 
               onClick={() => {
                 // Show interstitial ad before navigating away
+                console.log('QuizResults - showing interstitial ad before navigation');
                 showInterstitialAd();
                 // Wait a bit for the ad to display before navigation
                 setTimeout(() => {
