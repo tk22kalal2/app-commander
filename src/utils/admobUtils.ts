@@ -18,12 +18,48 @@ export const isMobileApp = (): boolean => {
   return isApp;
 };
 
+// Make sure AdMob SDK is loaded
+const loadAdMobSDK = (): Promise<boolean> => {
+  return new Promise((resolve) => {
+    if (window.admob) {
+      console.log('AdMob SDK already loaded');
+      resolve(true);
+      return;
+    }
+
+    console.log('Waiting for AdMob SDK to load...');
+    
+    // Set a timeout to avoid hanging if the SDK doesn't load
+    const timeout = setTimeout(() => {
+      console.log('AdMob SDK load timeout');
+      resolve(false);
+    }, 10000);
+
+    // Check periodically for admob object
+    const checkInterval = setInterval(() => {
+      if (window.admob) {
+        clearInterval(checkInterval);
+        clearTimeout(timeout);
+        console.log('AdMob SDK loaded successfully');
+        resolve(true);
+      }
+    }, 200);
+  });
+};
+
 // Initialize AdMob
-export const initializeAdMob = (): void => {
+export const initializeAdMob = async (): Promise<void> => {
   console.log('Initializing AdMob in admobUtils.ts');
   
   if (!isMobileApp()) {
     console.log('Not in a mobile app environment, skipping AdMob initialization');
+    return;
+  }
+
+  // Wait for SDK to load
+  const sdkLoaded = await loadAdMobSDK();
+  if (!sdkLoaded) {
+    console.log('AdMob SDK could not be loaded');
     return;
   }
   
@@ -201,33 +237,3 @@ export const hideBannerAd = (): void => {
     console.log('AdMob not available to hide banner');
   }
 };
-
-// Declare global types to keep TypeScript happy
-declare global {
-  interface Window {
-    admob?: {
-      initialize: (appId: string) => void;
-      AD_SIZE: {
-        SMART_BANNER: string;
-        LARGE_BANNER: string;
-        BANNER: string;
-        MEDIUM_RECTANGLE: string;
-        FULL_BANNER: string;
-        LEADERBOARD: string;
-      };
-      createBannerView: (options: any) => void;
-      showBannerAd: (show: boolean) => void;
-      prepareInterstitial: (options: any) => void;
-      prepareRewardVideoAd?: (options: any) => void;
-      showNativeAd?: (options: any) => void;
-      showAppOpenAd?: (options: any) => void;
-    };
-    admobAppId: string;
-    admobAdUnits?: {
-      banner: string;
-      interstitial: string;
-      native: string;
-      appOpen: string;
-    };
-  }
-}

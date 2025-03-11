@@ -35,6 +35,22 @@
     <!-- Base URL -->
     <base href="/" />
 
+    <!-- Cordova script (only for mobile apps) -->
+    <script>
+      // Check if we need to dynamically load the cordova script
+      const isMobileApp = window.location.href.includes('capacitor://') || 
+                      window.location.href.includes('app://') ||
+                      document.URL.includes('app://') ||
+                      navigator.userAgent.includes('Median');
+      
+      if (isMobileApp && !window.cordova) {
+        console.log('Mobile environment detected, attempting to load cordova.js');
+        const cordovaScript = document.createElement('script');
+        cordovaScript.src = 'cordova.js';
+        document.head.appendChild(cordovaScript);
+      }
+    </script>
+
     <!-- AdMob Initialization -->
     <script type="text/javascript">
       // AdMob configuration
@@ -55,7 +71,7 @@
                         navigator.userAgent.includes('Median');
       
       // Log environment info
-      console.log('AdMob config:', {
+      console.log('AdMob config in index.html:', {
         appId: window.admobAppId,
         adUnits: window.admobAdUnits,
         isMobileApp: isMobileApp,
@@ -65,9 +81,15 @@
       
       // Listen for deviceready event for Cordova/Capacitor apps
       document.addEventListener('deviceready', function() {
+        console.log('deviceready event fired in index.html');
         if (isMobileApp && window.admob) {
-          console.log('Device ready event - initializing AdMob');
-          window.admob.initialize(window.admobAppId);
+          console.log('Device ready event in index.html - initializing AdMob');
+          try {
+            window.admob.initialize(window.admobAppId);
+            console.log('AdMob initialized in index.html deviceready handler');
+          } catch (e) {
+            console.error('Error initializing AdMob in index.html:', e);
+          }
         }
       }, false);
     </script>

@@ -2,36 +2,60 @@
 import { createRoot } from 'react-dom/client'
 import App from './App.tsx'
 import './index.css'
-import { initializeAdMob, showAppOpenAd } from '@/utils/admobUtils'
+import { initializeAdMob, showAppOpenAd } from './utils/admobUtils'
 
 // Initialize AdMob for mobile apps
 if (typeof window !== 'undefined') {
-  document.addEventListener('DOMContentLoaded', () => {
-    // Check if we're in a mobile app environment
-    const isMobileApp = window.location.href.includes('capacitor://') || 
-                        window.location.href.includes('app://') ||
-                        document.URL.includes('app://') ||
-                        navigator.userAgent.includes('Median');
-    
-    console.log('Environment check in main.tsx:', { 
-      isMobileApp, 
-      userAgent: navigator.userAgent,
-      href: window.location.href 
-    });
-    
+  const isMobileApp = window.location.href.includes('capacitor://') || 
+                      window.location.href.includes('app://') ||
+                      document.URL.includes('app://') ||
+                      navigator.userAgent.includes('Median');
+  
+  console.log('Environment check in main.tsx:', { 
+    isMobileApp, 
+    userAgent: navigator.userAgent,
+    href: window.location.href 
+  });
+  
+  // Attempt to initialize on both deviceready (Cordova event) and DOMContentLoaded
+  document.addEventListener('deviceready', () => {
+    console.log('deviceready event fired in main.tsx');
     if (isMobileApp) {
-      // Only initialize AdMob in mobile environments
-      console.log('Initializing AdMob for mobile app from main.tsx');
+      console.log('Initializing AdMob on deviceready event');
       initializeAdMob();
       
       // Show app open ad on initial load with a delay
       setTimeout(() => {
         showAppOpenAd();
-      }, 2000);
+      }, 3000);
+    }
+  }, false);
+  
+  document.addEventListener('DOMContentLoaded', () => {
+    console.log('DOMContentLoaded event fired in main.tsx');
+    if (isMobileApp) {
+      console.log('Initializing AdMob on DOMContentLoaded event');
+      setTimeout(() => {
+        initializeAdMob();
+        
+        // Show app open ad on initial load with a delay
+        setTimeout(() => {
+          showAppOpenAd();
+        }, 3000);
+      }, 1000);
     } else {
-      console.log('Skipping AdMob initialization in main.tsx - not in mobile app environment');
+      console.log('Skipping AdMob initialization - not in mobile app environment');
     }
   });
+  
+  // Fallback initialization in case events don't fire properly
+  setTimeout(() => {
+    console.log('Fallback timeout executing for AdMob initialization');
+    if (isMobileApp) {
+      console.log('Initializing AdMob in fallback timeout');
+      initializeAdMob();
+    }
+  }, 5000);
 }
 
 const rootElement = document.getElementById("root");
