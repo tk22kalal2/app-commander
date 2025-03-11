@@ -71,9 +71,11 @@ export const initializeAdMob = async (): Promise<void> => {
     // Initialize with test devices if in development
     await mobileAds.initialize({
       // Configuration options according to the react-native-google-mobile-ads API
-      maxAdContentRating: 'MA',
-      tagForChildDirectedTreatment: false,
-      tagForUnderAgeOfConsent: false,
+      requestOptions: {
+        maxAdContentRating: mobileAds.MaxAdContentRating.MA,
+        tagForChildDirectedTreatment: false,
+        tagForUnderAgeOfConsent: false,
+      },
       testDeviceIdentifiers: ['EMULATOR']
     });
     
@@ -91,7 +93,7 @@ export const initializeAdMob = async (): Promise<void> => {
 };
 
 // Interstitial ad instance
-let interstitialAd: any = null;
+let interstitialAd: mobileAds.InterstitialAd | null = null;
 
 // Preload an interstitial ad
 const preloadInterstitialAd = async (): Promise<void> => {
@@ -106,17 +108,23 @@ const preloadInterstitialAd = async (): Promise<void> => {
     });
     
     // Set up event listeners
-    const unsubscribeLoaded = interstitialAd.addAdEventListener('loaded', () => {
-      console.log('Interstitial ad loaded successfully');
-    });
+    const unsubscribeLoaded = interstitialAd.addAdEventListener(
+      mobileAds.AdEventType.LOADED, 
+      () => {
+        console.log('Interstitial ad loaded successfully');
+      }
+    );
     
-    const unsubscribeClosed = interstitialAd.addAdEventListener('closed', () => {
-      console.log('Interstitial ad closed');
-      // Preload the next ad
-      unsubscribeLoaded();
-      unsubscribeClosed();
-      setTimeout(preloadInterstitialAd, 1000);
-    });
+    const unsubscribeClosed = interstitialAd.addAdEventListener(
+      mobileAds.AdEventType.CLOSED, 
+      () => {
+        console.log('Interstitial ad closed');
+        // Preload the next ad
+        unsubscribeLoaded();
+        unsubscribeClosed();
+        setTimeout(preloadInterstitialAd, 1000);
+      }
+    );
     
     // Load the ad
     await interstitialAd.load();
@@ -133,7 +141,7 @@ export const showInterstitialAd = async (): Promise<void> => {
   }
   
   try {
-    if (interstitialAd && await interstitialAd.load()) {
+    if (interstitialAd && await interstitialAd.isLoaded()) {
       console.log('Showing interstitial ad');
       await interstitialAd.show();
     } else {
@@ -147,7 +155,7 @@ export const showInterstitialAd = async (): Promise<void> => {
 };
 
 // App open ad instance
-let appOpenAd: any = null;
+let appOpenAd: mobileAds.AppOpenAd | null = null;
 
 // Preload an app open ad
 const preloadAppOpenAd = async (): Promise<void> => {
@@ -162,17 +170,23 @@ const preloadAppOpenAd = async (): Promise<void> => {
     });
     
     // Set up event listeners
-    const unsubscribeLoaded = appOpenAd.addAdEventListener('loaded', () => {
-      console.log('App open ad loaded successfully');
-    });
+    const unsubscribeLoaded = appOpenAd.addAdEventListener(
+      mobileAds.AdEventType.LOADED, 
+      () => {
+        console.log('App open ad loaded successfully');
+      }
+    );
     
-    const unsubscribeClosed = appOpenAd.addAdEventListener('closed', () => {
-      console.log('App open ad closed');
-      // Preload the next ad
-      unsubscribeLoaded();
-      unsubscribeClosed();
-      setTimeout(preloadAppOpenAd, 1000);
-    });
+    const unsubscribeClosed = appOpenAd.addAdEventListener(
+      mobileAds.AdEventType.CLOSED, 
+      () => {
+        console.log('App open ad closed');
+        // Preload the next ad
+        unsubscribeLoaded();
+        unsubscribeClosed();
+        setTimeout(preloadAppOpenAd, 1000);
+      }
+    );
     
     // Load the ad
     await appOpenAd.load();
@@ -189,7 +203,7 @@ export const showAppOpenAd = async (): Promise<void> => {
   }
   
   try {
-    if (appOpenAd) {
+    if (appOpenAd && await appOpenAd.isLoaded()) {
       console.log('Showing app open ad');
       await appOpenAd.show();
     } else {

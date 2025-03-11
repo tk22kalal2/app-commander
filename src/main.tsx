@@ -8,7 +8,8 @@ import { initializeAdMob, showAppOpenAd } from './utils/admobUtils'
 const isMobileApp = window.location.href.includes('capacitor://') || 
                    window.location.href.includes('app://') ||
                    document.URL.includes('app://') ||
-                   navigator.userAgent.includes('Median');
+                   navigator.userAgent.includes('Median') ||
+                   typeof global !== 'undefined' && global.HermesInternal != null;
 
 console.log('Environment check in main.tsx:', { 
   isMobileApp, 

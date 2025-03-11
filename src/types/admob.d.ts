@@ -1,51 +1,5 @@
 
-// Google Mobile Ads type definitions
-declare module 'react-native-google-mobile-ads' {
-  export function initialize(config?: {
-    maxAdContentRating?: 'G' | 'PG' | 'T' | 'MA';
-    tagForChildDirectedTreatment?: boolean | null;
-    tagForUnderAgeOfConsent?: boolean | null;
-    testDeviceIdentifiers?: string[];
-  }): Promise<void>;
-  
-  export function setRequestConfiguration(config: {
-    maxAdContentRating?: 'G' | 'PG' | 'T' | 'MA';
-    tagForChildDirectedTreatment?: boolean | null;
-    tagForUnderAgeOfConsent?: boolean | null;
-    testDeviceIdentifiers?: string[];
-  }): Promise<void>;
-
-  export class BannerAd {
-    static createForAdRequest(adUnitId: string, options?: {
-      requestNonPersonalizedAdsOnly?: boolean;
-      keywords?: string[];
-      size?: string;
-    }): JSX.Element;
-  }
-
-  export class InterstitialAd {
-    static createForAdRequest(adUnitId: string, options?: {
-      requestNonPersonalizedAdsOnly?: boolean;
-      keywords?: string[];
-    }): InterstitialAd;
-    load(): Promise<boolean>;
-    show(): Promise<void>;
-    addAdEventListener(event: string, handler: () => void): () => void;
-  }
-
-  export class AppOpenAd {
-    static createForAdRequest(adUnitId: string, options?: {
-      requestNonPersonalizedAdsOnly?: boolean;
-      keywords?: string[];
-    }): AppOpenAd;
-    load(): Promise<boolean>;
-    show(): Promise<void>;
-    addAdEventListener(event: string, handler: () => void): () => void;
-  }
-}
-
-// Legacy AdMob type definitions for backward compatibility
-interface Window {
+declare interface Window {
   admob?: {
     initialize: (appId: string) => void;
     AD_SIZE: {
@@ -61,8 +15,8 @@ interface Window {
     destroyBannerView: () => void;
     prepareInterstitial: (options: any) => void;
     showInterstitial: () => void;
-    showNativeAd?: (options: any) => void;
-    showAppOpenAd?: (options: any) => void;
+    showNativeAd: (options: any) => void;
+    showAppOpenAd: (options: any) => void;
   };
   admobAppId?: string;
   admobAdUnits?: {
@@ -71,4 +25,12 @@ interface Window {
     native: string;
     appOpen: string;
   };
+  cordova?: any;
+  HermesInternal?: any;
 }
+
+// Add this if your project uses global without explicit declaration
+declare const global: {
+  HermesInternal?: any;
+  [key: string]: any;
+};
