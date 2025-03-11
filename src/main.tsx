@@ -7,12 +7,26 @@ import { initializeAdMob, showAppOpenAd } from '@/utils/admobUtils'
 // Initialize AdMob for mobile apps
 if (typeof window !== 'undefined') {
   document.addEventListener('DOMContentLoaded', () => {
-    initializeAdMob();
+    // Check if we're in a mobile app environment
+    const isMobileApp = window.location.href.includes('capacitor://') || 
+                        window.location.href.includes('app://') ||
+                        document.URL.includes('app://') ||
+                        navigator.userAgent.includes('Median');
     
-    // Show app open ad on initial load
-    setTimeout(() => {
-      showAppOpenAd();
-    }, 1000);
+    console.log('Environment check:', { isMobileApp, userAgent: navigator.userAgent });
+    
+    if (isMobileApp) {
+      // Only initialize AdMob in mobile environments
+      console.log('Initializing AdMob for mobile app');
+      initializeAdMob();
+      
+      // Show app open ad on initial load with a delay
+      setTimeout(() => {
+        showAppOpenAd();
+      }, 2000);
+    } else {
+      console.log('Skipping AdMob initialization - not in mobile app environment');
+    }
   });
 }
 

@@ -37,13 +37,8 @@
 
     <!-- AdMob Initialization -->
     <script type="text/javascript">
+      // AdMob configuration
       window.admobAppId = "ca-app-pub-5920367457745298~6087552730";
-      
-      // Check if running in mobile app context
-      const isMobileApp = window.location.href.includes('capacitor://') || 
-                        window.location.href.includes('app://') ||
-                        document.URL.includes('app://') ||
-                        navigator.userAgent.includes('Median');
       
       // AdMob Ad Unit IDs
       window.admobAdUnits = {
@@ -53,10 +48,28 @@
         appOpen: "ca-app-pub-5920367457745298/7296993946"
       };
       
+      // Check if running in mobile app context
+      const isMobileApp = window.location.href.includes('capacitor://') || 
+                        window.location.href.includes('app://') ||
+                        document.URL.includes('app://') ||
+                        navigator.userAgent.includes('Median');
+      
       // Log environment info
-      console.log('Is mobile app:', isMobileApp);
-      console.log('User agent:', navigator.userAgent);
-      console.log('Current URL:', window.location.href);
+      console.log('AdMob config:', {
+        appId: window.admobAppId,
+        adUnits: window.admobAdUnits,
+        isMobileApp: isMobileApp,
+        userAgent: navigator.userAgent,
+        url: window.location.href
+      });
+      
+      // Listen for deviceready event for Cordova/Capacitor apps
+      document.addEventListener('deviceready', function() {
+        if (isMobileApp && window.admob) {
+          console.log('Device ready event - initializing AdMob');
+          window.admob.initialize(window.admobAppId);
+        }
+      }, false);
     </script>
 
     <!-- Prerender for SEO -->
