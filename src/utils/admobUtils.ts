@@ -42,7 +42,9 @@ const getAdUnitId = (adType: keyof typeof AD_UNITS): string => {
   const isProduction = process.env.NODE_ENV === 'production';
   if (!isProduction) {
     console.log(`Using test ${adType} ad unit`);
-    return AD_UNITS.test[adType as keyof typeof AD_UNITS.test] || AD_UNITS[adType];
+    if (adType in AD_UNITS.test) {
+      return AD_UNITS.test[adType as keyof typeof AD_UNITS.test];
+    }
   }
   return AD_UNITS[adType];
 };
@@ -59,14 +61,11 @@ export const initializeAdMob = async (): Promise<void> => {
     
     // Initialize with test devices if in development
     await mobileAds.initialize({
-      requestConfiguration: {
-        // Set to G, PG, T or MA depending on your app's content
-        maxAdContentRating: 'MA',
-        tagForChildDirectedTreatment: false,
-        tagForUnderAgeOfConsent: false,
-        // Add test devices here for development
-        testDeviceIdentifiers: ['EMULATOR']
-      }
+      // Configuration options according to the react-native-google-mobile-ads API
+      maxAdContentRating: 'MA',
+      tagForChildDirectedTreatment: false,
+      tagForUnderAgeOfConsent: false,
+      testDeviceIdentifiers: ['EMULATOR']
     });
     
     console.log('Google Mobile Ads SDK initialized successfully');

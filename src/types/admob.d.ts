@@ -1,43 +1,46 @@
 
 // Google Mobile Ads type definitions
 declare module 'react-native-google-mobile-ads' {
-  export function initialize(requestConfiguration?: RequestConfiguration): Promise<void>;
-  export function setRequestConfiguration(requestConfiguration: RequestConfiguration): Promise<void>;
-  
-  export interface RequestConfiguration {
+  export function initialize(config?: {
     maxAdContentRating?: 'G' | 'PG' | 'T' | 'MA';
     tagForChildDirectedTreatment?: boolean | null;
     tagForUnderAgeOfConsent?: boolean | null;
     testDeviceIdentifiers?: string[];
-  }
+  }): Promise<void>;
+  
+  export function setRequestConfiguration(config: {
+    maxAdContentRating?: 'G' | 'PG' | 'T' | 'MA';
+    tagForChildDirectedTreatment?: boolean | null;
+    tagForUnderAgeOfConsent?: boolean | null;
+    testDeviceIdentifiers?: string[];
+  }): Promise<void>;
 
   export class BannerAd {
-    static createForAdRequest(adUnitId: string, options?: BannerAdOptions): JSX.Element;
+    static createForAdRequest(adUnitId: string, options?: {
+      requestNonPersonalizedAdsOnly?: boolean;
+      keywords?: string[];
+      size?: string;
+    }): JSX.Element;
   }
 
   export class InterstitialAd {
-    static createForAdRequest(adUnitId: string, options?: AdRequestOptions): InterstitialAd;
-    load(): Promise<void>;
+    static createForAdRequest(adUnitId: string, options?: {
+      requestNonPersonalizedAdsOnly?: boolean;
+      keywords?: string[];
+    }): InterstitialAd;
+    load(): Promise<boolean>;
     show(): Promise<void>;
     addAdEventListener(event: string, handler: () => void): () => void;
   }
 
   export class AppOpenAd {
-    static createForAdRequest(adUnitId: string, options?: AdRequestOptions): AppOpenAd;
-    load(): Promise<void>;
+    static createForAdRequest(adUnitId: string, options?: {
+      requestNonPersonalizedAdsOnly?: boolean;
+      keywords?: string[];
+    }): AppOpenAd;
+    load(): Promise<boolean>;
     show(): Promise<void>;
     addAdEventListener(event: string, handler: () => void): () => void;
-  }
-
-  export interface BannerAdOptions {
-    requestNonPersonalizedAdsOnly?: boolean;
-    keywords?: string[];
-    size?: string;
-  }
-
-  export interface AdRequestOptions {
-    requestNonPersonalizedAdsOnly?: boolean;
-    keywords?: string[];
   }
 }
 
