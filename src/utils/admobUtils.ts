@@ -1,14 +1,33 @@
 
 /**
- * Utility functions for Google AdMob integration
+ * Google Mobile Ads Integration Utility
+ * Uses react-native-google-mobile-ads for modern ad integration
  */
+import * as mobileAds from 'react-native-google-mobile-ads';
+
+// Ad Unit IDs
+const AD_UNITS = {
+  banner: "ca-app-pub-5920367457745298/9145499918",
+  interstitial: "ca-app-pub-5920367457745298/3026544626",
+  native: "ca-app-pub-5920367457745298/5613147695",
+  appOpen: "ca-app-pub-5920367457745298/7296993946",
+  // Always include test ad IDs for development
+  test: {
+    banner: "ca-app-pub-3940256099942544/6300978111",
+    interstitial: "ca-app-pub-3940256099942544/1033173712",
+    native: "ca-app-pub-3940256099942544/2247696110",
+    appOpen: "ca-app-pub-3940256099942544/3419835294"
+  }
+};
 
 // Check if running in a mobile app environment
 export const isMobileApp = (): boolean => {
   const isApp = window.location.href.includes('capacitor://') || 
          window.location.href.includes('app://') ||
          document.URL.includes('app://') ||
-         navigator.userAgent.includes('Median');
+         navigator.userAgent.includes('Median') ||
+         // Additional checks for React Native environment
+         typeof global !== 'undefined' && global.HermesInternal != null;
   
   console.log('isMobileApp check:', { 
     isApp, 
@@ -18,222 +37,229 @@ export const isMobileApp = (): boolean => {
   return isApp;
 };
 
-// Make sure AdMob SDK is loaded
-const loadAdMobSDK = (): Promise<boolean> => {
-  return new Promise((resolve) => {
-    if (window.admob) {
-      console.log('AdMob SDK already loaded');
-      resolve(true);
-      return;
-    }
-
-    console.log('Waiting for AdMob SDK to load...');
-    
-    // Set a timeout to avoid hanging if the SDK doesn't load
-    const timeout = setTimeout(() => {
-      console.log('AdMob SDK load timeout');
-      resolve(false);
-    }, 10000);
-
-    // Check periodically for admob object
-    const checkInterval = setInterval(() => {
-      if (window.admob) {
-        clearInterval(checkInterval);
-        clearTimeout(timeout);
-        console.log('AdMob SDK loaded successfully');
-        resolve(true);
-      }
-    }, 200);
-  });
+// Get the appropriate ad unit ID (use test ads in development)
+const getAdUnitId = (adType: keyof typeof AD_UNITS): string => {
+  const isProduction = process.env.NODE_ENV === 'production';
+  if (!isProduction) {
+    console.log(`Using test ${adType} ad unit`);
+    return AD_UNITS.test[adType as keyof typeof AD_UNITS.test] || AD_UNITS[adType];
+  }
+  return AD_UNITS[adType];
 };
 
-// Initialize AdMob
+// Initialize Google Mobile Ads SDK
 export const initializeAdMob = async (): Promise<void> => {
-  console.log('Initializing AdMob in admobUtils.ts');
-  
   if (!isMobileApp()) {
     console.log('Not in a mobile app environment, skipping AdMob initialization');
     return;
   }
 
-  // Wait for SDK to load
-  const sdkLoaded = await loadAdMobSDK();
-  if (!sdkLoaded) {
-    console.log('AdMob SDK could not be loaded');
-    return;
-  }
-  
-  if (window.admob) {
-    try {
-      // If admobAppId is already defined in the window object, use that
-      const appId = window.admobAppId || 'ca-app-pub-5920367457745298~6087552730';
-      
-      // If ad units are not defined, define them
-      if (!window.admobAdUnits) {
-        window.admobAdUnits = {
-          banner: 'ca-app-pub-5920367457745298/9145499918',
-          interstitial: 'ca-app-pub-5920367457745298/3026544626',
-          native: 'ca-app-pub-5920367457745298/5613147695',
-          appOpen: 'ca-app-pub-5920367457745298/7296993946'
-        };
+  try {
+    console.log('Initializing Google Mobile Ads SDK');
+    
+    // Initialize with test devices if in development
+    await mobileAds.initialize({
+      requestConfiguration: {
+        // Set to G, PG, T or MA depending on your app's content
+        maxAdContentRating: 'MA',
+        tagForChildDirectedTreatment: false,
+        tagForUnderAgeOfConsent: false,
+        // Add test devices here for development
+        testDeviceIdentifiers: ['EMULATOR']
       }
-      
-      console.log('AdMob plugin found, initializing with ID:', appId);
-      console.log('AdMob ad units:', window.admobAdUnits);
-      
-      window.admob.initialize(appId);
-      console.log('AdMob initialized successfully');
-      
-      // Show an initial banner ad with a delay to ensure initialization completes
-      setTimeout(() => {
-        showBannerAd(8);
-      }, 3000);
-    } catch (error) {
-      console.error('Error initializing AdMob:', error);
-    }
-  } else {
-    console.log('AdMob plugin not available');
+    });
+    
+    console.log('Google Mobile Ads SDK initialized successfully');
+    
+    // Load an initial interstitial ad
+    preloadInterstitialAd();
+    
+    // Load app open ad
+    preloadAppOpenAd();
+    
+  } catch (error) {
+    console.error('Error initializing Google Mobile Ads SDK:', error);
   }
 };
 
-// Create and show banner ad
-export const showBannerAd = (position: number = 8): void => {
-  console.log('Attempting to show banner ad');
+// Interstitial ad instance
+let interstitialAd: any = null;
+
+// Preload an interstitial ad
+const preloadInterstitialAd = async (): Promise<void> => {
+  if (!isMobileApp()) return;
   
-  if (!isMobileApp()) {
-    console.log('Not in a mobile app environment, skipping banner ad');
-    return;
-  }
-  
-  if (window.admob && window.admobAdUnits) {
-    try {
-      console.log('Showing banner ad with ID:', window.admobAdUnits.banner);
-      window.admob.createBannerView({
-        adSize: window.admob.AD_SIZE.SMART_BANNER,
-        adId: window.admobAdUnits.banner,
-        position: position, // 8 = bottom, 2 = top
-        autoShow: true
-      });
-      console.log('Banner ad request sent');
-    } catch (error) {
-      console.error('Error showing banner ad:', error);
-    }
-  } else {
-    console.log('AdMob or ad units not available for banner', { 
-      admob: !!window.admob, 
-      adUnits: !!window.admobAdUnits 
+  try {
+    const adUnitId = getAdUnitId('interstitial');
+    console.log('Preloading interstitial ad with ID:', adUnitId);
+    
+    interstitialAd = mobileAds.InterstitialAd.createForAdRequest(adUnitId, {
+      keywords: ['medical', 'education', 'quiz'],
     });
+    
+    // Set up event listeners
+    const unsubscribeLoaded = interstitialAd.addAdEventListener('loaded', () => {
+      console.log('Interstitial ad loaded successfully');
+    });
+    
+    const unsubscribeClosed = interstitialAd.addAdEventListener('closed', () => {
+      console.log('Interstitial ad closed');
+      // Preload the next ad
+      unsubscribeLoaded();
+      unsubscribeClosed();
+      setTimeout(preloadInterstitialAd, 1000);
+    });
+    
+    // Load the ad
+    await interstitialAd.load();
+  } catch (error) {
+    console.error('Error preloading interstitial ad:', error);
   }
 };
 
 // Show interstitial ad
-export const showInterstitialAd = (): void => {
-  console.log('Attempting to show interstitial ad');
-  
+export const showInterstitialAd = async (): Promise<void> => {
   if (!isMobileApp()) {
     console.log('Not in a mobile app environment, skipping interstitial ad');
     return;
   }
   
-  if (window.admob && window.admobAdUnits) {
-    try {
-      console.log('Showing interstitial ad with ID:', window.admobAdUnits.interstitial);
-      window.admob.prepareInterstitial({
-        adId: window.admobAdUnits.interstitial,
-        autoShow: true
-      });
-      console.log('Interstitial ad request sent');
-    } catch (error) {
-      console.error('Error showing interstitial ad:', error);
+  try {
+    if (interstitialAd && await interstitialAd.load()) {
+      console.log('Showing interstitial ad');
+      await interstitialAd.show();
+    } else {
+      console.log('Interstitial ad not ready, preloading a new one');
+      preloadInterstitialAd();
     }
-  } else {
-    console.log('AdMob or ad units not available for interstitial', { 
-      admob: !!window.admob, 
-      adUnits: !!window.admobAdUnits 
-    });
+  } catch (error) {
+    console.error('Error showing interstitial ad:', error);
+    preloadInterstitialAd(); // Try to load a new one
   }
 };
 
-// Show native ad
-export const showNativeAd = (containerId: string): void => {
-  console.log('Attempting to show native ad in', containerId);
+// App open ad instance
+let appOpenAd: any = null;
+
+// Preload an app open ad
+const preloadAppOpenAd = async (): Promise<void> => {
+  if (!isMobileApp()) return;
   
-  if (!isMobileApp()) {
-    console.log('Not in a mobile app environment, skipping native ad');
-    return;
-  }
-  
-  if (window.admob && window.admobAdUnits) {
-    try {
-      if (window.admob.showNativeAd) {
-        console.log('Showing native ad with ID:', window.admobAdUnits.native);
-        window.admob.showNativeAd({
-          adId: window.admobAdUnits.native,
-          containerId: containerId
-        });
-        console.log('Native ad request sent');
-      } else {
-        console.log('Native ad function not available in this version of the AdMob plugin');
-      }
-    } catch (error) {
-      console.error('Error showing native ad:', error);
-    }
-  } else {
-    console.log('AdMob or ad units not available for native', {
-      admob: !!window.admob, 
-      adUnits: !!window.admobAdUnits
+  try {
+    const adUnitId = getAdUnitId('appOpen');
+    console.log('Preloading app open ad with ID:', adUnitId);
+    
+    appOpenAd = mobileAds.AppOpenAd.createForAdRequest(adUnitId, {
+      keywords: ['medical', 'education', 'quiz'],
     });
+    
+    // Set up event listeners
+    const unsubscribeLoaded = appOpenAd.addAdEventListener('loaded', () => {
+      console.log('App open ad loaded successfully');
+    });
+    
+    const unsubscribeClosed = appOpenAd.addAdEventListener('closed', () => {
+      console.log('App open ad closed');
+      // Preload the next ad
+      unsubscribeLoaded();
+      unsubscribeClosed();
+      setTimeout(preloadAppOpenAd, 1000);
+    });
+    
+    // Load the ad
+    await appOpenAd.load();
+  } catch (error) {
+    console.error('Error preloading app open ad:', error);
   }
 };
 
 // Show app open ad
-export const showAppOpenAd = (): void => {
-  console.log('Attempting to show app open ad');
-  
+export const showAppOpenAd = async (): Promise<void> => {
   if (!isMobileApp()) {
     console.log('Not in a mobile app environment, skipping app open ad');
     return;
   }
   
-  if (window.admob && window.admobAdUnits) {
-    try {
-      if (window.admob.showAppOpenAd) {
-        console.log('Showing app open ad with ID:', window.admobAdUnits.appOpen);
-        window.admob.showAppOpenAd({
-          adId: window.admobAdUnits.appOpen
-        });
-        console.log('App open ad request sent');
-      } else {
-        console.log('App open ad function not available in this version of the AdMob plugin');
-      }
-    } catch (error) {
-      console.error('Error showing app open ad:', error);
+  try {
+    if (appOpenAd) {
+      console.log('Showing app open ad');
+      await appOpenAd.show();
+    } else {
+      console.log('App open ad not ready, preloading a new one');
+      preloadAppOpenAd();
     }
-  } else {
-    console.log('AdMob or ad units not available for app open', {
-      admob: !!window.admob, 
-      adUnits: !!window.admobAdUnits
-    });
+  } catch (error) {
+    console.error('Error showing app open ad:', error);
+    preloadAppOpenAd(); // Try to load a new one
   }
 };
 
-// Hide banner ad
-export const hideBannerAd = (): void => {
-  console.log('Attempting to hide banner ad');
-  
-  if (!isMobileApp()) {
-    console.log('Not in a mobile app environment, skipping hide banner ad');
-    return;
-  }
-  
-  if (window.admob) {
-    try {
-      window.admob.showBannerAd(false);
-      console.log('Banner ad hidden');
-    } catch (error) {
-      console.error('Error hiding banner ad:', error);
-    }
-  } else {
-    console.log('AdMob not available to hide banner');
-  }
+// Show banner ad - function signature kept for backward compatibility
+export const showBannerAd = (position: number = 8): void => {
+  console.log('Banner ads should now be implemented as React components using BannerAd.createForAdRequest()');
+  console.log('Please update your implementation to use the React component approach');
 };
+
+// Hide banner ad - function signature kept for backward compatibility
+export const hideBannerAd = (): void => {
+  console.log('Banner ads should now be implemented as React components, which can be conditionally rendered');
+  console.log('Please update your implementation to conditionally render the BannerAd component');
+};
+
+// Show native ad - function signature kept for backward compatibility
+export const showNativeAd = (containerId: string): void => {
+  console.log('Native ads should now be implemented as React components');
+  console.log('Please update your implementation to use the React component approach');
+};
+
+// Backward compatibility layer for existing code
+// This helps transition from the old cordova-plugin-admob to react-native-google-mobile-ads
+if (typeof window !== 'undefined' && !window.admob) {
+  console.log('Setting up backward compatibility layer for AdMob');
+  window.admob = {
+    initialize: (appId: string) => {
+      console.log('Legacy admob.initialize called with ID:', appId);
+      initializeAdMob();
+    },
+    AD_SIZE: {
+      SMART_BANNER: 'SMART_BANNER',
+      LARGE_BANNER: 'LARGE_BANNER',
+      BANNER: 'BANNER',
+      MEDIUM_RECTANGLE: 'MEDIUM_RECTANGLE',
+      FULL_BANNER: 'FULL_BANNER',
+      LEADERBOARD: 'LEADERBOARD'
+    },
+    createBannerView: (options: any) => {
+      console.log('Legacy createBannerView called with options:', options);
+      // Implementation will need to be handled through React components
+    },
+    showBannerAd: (show: boolean) => {
+      console.log('Legacy showBannerAd called with show:', show);
+      // Implementation will need to be handled through React components
+    },
+    destroyBannerView: () => {
+      console.log('Legacy destroyBannerView called');
+      // Implementation will need to be handled through React components
+    },
+    prepareInterstitial: (options: any) => {
+      console.log('Legacy prepareInterstitial called with options:', options);
+      if (options?.autoShow) {
+        showInterstitialAd();
+      } else {
+        preloadInterstitialAd();
+      }
+    },
+    showInterstitial: () => {
+      console.log('Legacy showInterstitial called');
+      showInterstitialAd();
+    },
+    showNativeAd: (options: any) => {
+      console.log('Legacy showNativeAd called with options:', options);
+      // Implementation will need to be handled through React components
+    },
+    showAppOpenAd: (options: any) => {
+      console.log('Legacy showAppOpenAd called with options:', options);
+      showAppOpenAd();
+    }
+  };
+}

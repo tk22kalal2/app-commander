@@ -1,10 +1,10 @@
-
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Trophy } from "lucide-react";
 import { useEffect, useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { useNavigate } from "react-router-dom";
-import { showInterstitialAd, showBannerAd } from '@/utils/admobUtils';
+import { showInterstitialAd } from '@/utils/admobUtils';
+import BannerAdComponent from './BannerAdComponent';
 
 interface QuizResultsProps {
   score: number;
@@ -47,12 +47,6 @@ export const QuizResults = ({
     };
     
     fetchUserName();
-    
-    // Show banner ad at bottom of results page
-    setTimeout(() => {
-      console.log('QuizResults - showing banner ad');
-      showBannerAd(8);
-    }, 500);
     
     // 80% chance to show interstitial ad when results are displayed
     if (Math.random() < 0.8) {
@@ -103,6 +97,9 @@ export const QuizResults = ({
           </div>
         </CardContent>
       </Card>
+      
+      {/* Banner ad at the bottom of the page */}
+      <BannerAdComponent position="bottom" className="mt-4" />
     </div>
   );
 };

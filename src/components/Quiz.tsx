@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { generateQuestion, handleDoubt } from "@/services/groqService";
@@ -6,11 +5,8 @@ import { toast } from "sonner";
 import { QuizResults } from "./QuizResults";
 import { Textarea } from "./ui/textarea";
 import { Card } from "./ui/card";
-import { 
-  showBannerAd, 
-  showInterstitialAd, 
-  showNativeAd 
-} from "@/utils/admobUtils";
+import { showInterstitialAd } from "@/utils/admobUtils";
+import BannerAdComponent from "./BannerAdComponent";
 
 interface QuizProps {
   subject: string;
@@ -48,49 +44,16 @@ export const Quiz = ({ subject, chapter, topic, difficulty, questionCount, timeL
   const [doubtMessages, setDoubtMessages] = useState<DoubtMessage[]>([]);
   const [isLoadingAnswer, setIsLoadingAnswer] = useState(false);
   const [adCounter, setAdCounter] = useState(0);
-  const [nativeAdShown, setNativeAdShown] = useState(false);
+  const [showNativeAd, setShowNativeAd] = useState(false);
 
   useEffect(() => {
     loadQuestion();
+    console.log("Quiz component mounted");
     
-    console.log("Quiz component mounted - showing banner ad");
-    // Show banner ad on component mount with 1s delay to ensure DOM is ready
-    setTimeout(() => {
-      showBannerAd(8); // Show at bottom
-    }, 1000);
-
-    // Create container for native ad
-    createNativeAdContainer();
-
     return () => {
-      // Clean up code if needed
       console.log("Quiz component unmounting");
     };
   }, []);
-
-  const createNativeAdContainer = () => {
-    // Create a container for native ads if it doesn't exist
-    if (!document.getElementById('native-ad-container')) {
-      const container = document.createElement('div');
-      container.id = 'native-ad-container';
-      container.style.width = '100%';
-      container.style.minHeight = '100px';
-      container.style.margin = '20px 0';
-      container.style.display = 'none'; // Hidden by default
-      document.body.appendChild(container);
-    }
-  };
-
-  const showNativeAdIfNeeded = () => {
-    if (!nativeAdShown) {
-      const container = document.getElementById('native-ad-container');
-      if (container) {
-        container.style.display = 'block';
-        showNativeAd('native-ad-container');
-        setNativeAdShown(true);
-      }
-    }
-  };
 
   useEffect(() => {
     if (timeRemaining !== null && timeRemaining > 0) {
@@ -151,7 +114,7 @@ export const Quiz = ({ subject, chapter, topic, difficulty, questionCount, timeL
         console.log("Incorrect answer - showing native ad (50% chance)");
         // Show native ad when user answers incorrectly (50% chance)
         if (Math.random() < 0.5) {
-          showNativeAdIfNeeded();
+          setShowNativeAd(true);
         }
       }
     }
@@ -174,6 +137,7 @@ export const Quiz = ({ subject, chapter, topic, difficulty, questionCount, timeL
     
     setQuestionNumber(prev => prev + 1);
     setDoubtMessages([]);
+    setShowNativeAd(false);
     loadQuestion();
   };
 
@@ -239,7 +203,10 @@ export const Quiz = ({ subject, chapter, topic, difficulty, questionCount, timeL
   }
 
   return (
-    <div className="max-w-4xl mx-auto p-6 space-y-6 mt-16">
+    <div className="max-w-4xl mx-auto p-6 space-y-6 mt-16 mb-16">
+      {/* Banner ad at the top */}
+      <BannerAdComponent position="top" />
+      
       <div className="flex justify-between items-center">
         <div className="text-lg font-semibold">
           Question {questionNumber} {questionCount !== "No Limit" && `of ${questionCount}`}
@@ -268,6 +235,16 @@ export const Quiz = ({ subject, chapter, topic, difficulty, questionCount, timeL
           ))}
         </div>
 
+        {/* Show native ad conditionally */}
+        {showNativeAd && (
+          <div className="mt-4 p-3 bg-gray-100 rounded-md text-center">
+            <p className="text-sm text-gray-500 mb-1">Advertisement</p>
+            <div className="h-[120px] flex items-center justify-center">
+              <p className="text-gray-400">Ad would appear here in the mobile app</p>
+            </div>
+          </div>
+        )}
+
         {selectedAnswer && (
           <div className="mt-6">
             <div className="flex justify-between items-center mb-4">
@@ -276,7 +253,7 @@ export const Quiz = ({ subject, chapter, topic, difficulty, questionCount, timeL
                   setShowExplanation(!showExplanation);
                   // Show native ad when showing explanation (30% chance)
                   if (!showExplanation && Math.random() < 0.3) {
-                    showNativeAdIfNeeded();
+                    setShowNativeAd(true);
                   }
                 }}
                 variant="outline"
@@ -335,8 +312,9 @@ export const Quiz = ({ subject, chapter, topic, difficulty, questionCount, timeL
           </div>
         )}
       </div>
+      
+      {/* Banner ad at the bottom */}
+      <BannerAdComponent position="bottom" />
     </div>
   );
 };
-
-// Removed duplicate global interface declaration

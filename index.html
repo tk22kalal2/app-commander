@@ -35,28 +35,34 @@
     <!-- Base URL -->
     <base href="/" />
 
-    <!-- Cordova script (only for mobile apps) -->
+    <!-- Mobile App Detection -->
     <script>
-      // Check if we need to dynamically load the cordova script
+      // Check if running in a mobile app environment
       const isMobileApp = window.location.href.includes('capacitor://') || 
-                      window.location.href.includes('app://') ||
-                      document.URL.includes('app://') ||
-                      navigator.userAgent.includes('Median');
+                          window.location.href.includes('app://') ||
+                          document.URL.includes('app://') ||
+                          navigator.userAgent.includes('Median');
       
+      // Log environment information for debugging
+      console.log('App environment:', {
+        isMobileApp: isMobileApp,
+        userAgent: navigator.userAgent,
+        url: window.location.href
+      });
+      
+      // Dynamically load cordova script in mobile environments
       if (isMobileApp && !window.cordova) {
-        console.log('Mobile environment detected, attempting to load cordova.js');
+        console.log('Loading cordova.js for mobile environment');
         const cordovaScript = document.createElement('script');
         cordovaScript.src = 'cordova.js';
         document.head.appendChild(cordovaScript);
       }
     </script>
 
-    <!-- AdMob Initialization -->
-    <script type="text/javascript">
-      // AdMob configuration
+    <!-- Google Mobile Ads Configuration -->
+    <script>
+      // Define AdMob App ID and Ad Units
       window.admobAppId = "ca-app-pub-5920367457745298~6087552730";
-      
-      // AdMob Ad Unit IDs
       window.admobAdUnits = {
         banner: "ca-app-pub-5920367457745298/9145499918",
         interstitial: "ca-app-pub-5920367457745298/3026544626",
@@ -64,54 +70,10 @@
         appOpen: "ca-app-pub-5920367457745298/7296993946"
       };
       
-      // Check if running in mobile app context
-      const isMobileApp = window.location.href.includes('capacitor://') || 
-                        window.location.href.includes('app://') ||
-                        document.URL.includes('app://') ||
-                        navigator.userAgent.includes('Median');
-      
-      // Log environment info
-      console.log('AdMob config in index.html:', {
+      console.log('AdMob configuration loaded:', {
         appId: window.admobAppId,
-        adUnits: window.admobAdUnits,
-        isMobileApp: isMobileApp,
-        userAgent: navigator.userAgent,
-        url: window.location.href
+        adUnits: window.admobAdUnits
       });
-      
-      // Listen for deviceready event for Cordova/Capacitor apps
-      document.addEventListener('deviceready', function() {
-        console.log('deviceready event fired in index.html');
-        if (isMobileApp && window.admob) {
-          console.log('Device ready event in index.html - initializing AdMob');
-          try {
-            window.admob.initialize(window.admobAppId);
-            console.log('AdMob initialized in index.html deviceready handler');
-          } catch (e) {
-            console.error('Error initializing AdMob in index.html:', e);
-          }
-        }
-      }, false);
-    </script>
-
-    <!-- Prerender for SEO -->
-    <script>
-      // Create static versions of dynamic routes for SEO
-      const routes = ['/blog', '/quiz/setup'];
-      const currentPath = window.location.pathname;
-      
-      if (routes.includes(currentPath)) {
-        document.addEventListener('DOMContentLoaded', function() {
-          // Force render the content immediately for crawlers
-          const root = document.getElementById('root');
-          if (root && !root.hasChildNodes()) {
-            const meta = document.createElement('meta');
-            meta.setAttribute('name', 'robots');
-            meta.setAttribute('content', 'noindex, nofollow');
-            document.head.appendChild(meta);
-          }
-        });
-      }
     </script>
 
     <!-- GitHub Pages SPA Redirect -->
