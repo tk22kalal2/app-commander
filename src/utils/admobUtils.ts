@@ -46,7 +46,16 @@ const getAdUnitId = (adType: keyof typeof AD_UNITS): string => {
       return AD_UNITS.test[adType as keyof typeof AD_UNITS.test];
     }
   }
-  return AD_UNITS[adType];
+  
+  // Make sure we only return the string property from AD_UNITS
+  // This ensures we never return the 'test' object itself
+  if (adType !== 'test') {
+    return AD_UNITS[adType] as string;
+  }
+  
+  // Default fallback - should never reach here in normal operation
+  console.warn(`Unknown ad type: ${adType}, returning banner ad unit ID`);
+  return AD_UNITS.banner;
 };
 
 // Initialize Google Mobile Ads SDK
