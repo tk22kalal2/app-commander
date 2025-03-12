@@ -7,6 +7,7 @@ import { Footer } from "@/components/Footer";
 import { Book } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import { toast } from "sonner";
+import TestBannerAdComponent from "@/components/TestBannerAdComponent";
 
 const Index = () => {
   const navigate = useNavigate();
@@ -48,6 +49,9 @@ const Index = () => {
             >
               Add New API Key
             </Button>
+            
+            {/* Test Banner Ad Component */}
+            <TestBannerAdComponent />
           </div>
         </div>
       </section>

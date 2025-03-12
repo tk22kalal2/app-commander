@@ -71,10 +71,17 @@ export const initializeAdMob = async (): Promise<void> => {
     // Using a simpler initialization approach that should work with most versions
     // of the react-native-google-mobile-ads library
     if (typeof mobileAds === 'object') {
-      // Check if the library has a direct initialization method
-      if (typeof mobileAds.initialize === 'function') {
-        await mobileAds.initialize();
-        console.log('Google Mobile Ads SDK initialized successfully');
+      console.log('MobileAds object detected:', Object.keys(mobileAds));
+      
+      // We'll use a generic approach to avoid TypeScript errors by checking
+      // if methods exist before trying to call them
+      const mobileAdsAny = mobileAds as any;
+      
+      // Try the initialization methods that might be available
+      if (typeof mobileAdsAny.initialize === 'function') {
+        console.log('Using mobileAds.initialize() method');
+        await mobileAdsAny.initialize();
+        console.log('Google Mobile Ads SDK initialized successfully via initialize()');
       } else {
         // Fallback to just logging that we're ready
         console.log('Google Mobile Ads SDK ready to use (no initialization method found)');
