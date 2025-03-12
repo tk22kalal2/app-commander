@@ -68,14 +68,13 @@ export const initializeAdMob = async (): Promise<void> => {
   try {
     console.log('Initializing Google Mobile Ads SDK');
     
-    // Initialize with test devices if in development
-    await mobileAds.initialize({
+    // Fix: Use the correct initialization method for the library
+    // mobileAds.initialize() does not exist, use RequestConfiguration instead
+    await mobileAds.setRequestConfiguration({
       // Configuration options according to the react-native-google-mobile-ads API
-      requestOptions: {
-        maxAdContentRating: mobileAds.MaxAdContentRating.MA,
-        tagForChildDirectedTreatment: false,
-        tagForUnderAgeOfConsent: false,
-      },
+      maxAdContentRating: mobileAds.MaxAdContentRating.MA,
+      tagForChildDirectedTreatment: false,
+      tagForUnderAgeOfConsent: false,
       testDeviceIdentifiers: ['EMULATOR']
     });
     
@@ -141,7 +140,8 @@ export const showInterstitialAd = async (): Promise<void> => {
   }
   
   try {
-    if (interstitialAd && await interstitialAd.isLoaded()) {
+    // Fix: Use the correct property 'loaded' instead of 'isLoaded'
+    if (interstitialAd && interstitialAd.loaded) {
       console.log('Showing interstitial ad');
       await interstitialAd.show();
     } else {
@@ -203,7 +203,8 @@ export const showAppOpenAd = async (): Promise<void> => {
   }
   
   try {
-    if (appOpenAd && await appOpenAd.isLoaded()) {
+    // Fix: Use the correct property 'loaded' instead of 'isLoaded'
+    if (appOpenAd && appOpenAd.loaded) {
       console.log('Showing app open ad');
       await appOpenAd.show();
     } else {
