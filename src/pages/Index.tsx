@@ -27,6 +27,8 @@ const Index = () => {
     setShowTestAd(prev => !prev);
     if (!showTestAd) {
       toast.info("Test ad banner is now visible");
+    } else {
+      toast.info("Test ad banner is now hidden");
     }
   };
 
@@ -60,7 +62,7 @@ const Index = () => {
             
             <Button 
               variant="outline"
-              className="bg-white hover:bg-gray-100 text-medblue border-medblue"
+              className="bg-white hover:bg-gray-100 text-medblue border-medblue w-40"
               onClick={handleToggleTestAd}
             >
               {showTestAd ? "Hide Test Ad" : "Show Test Ad"}
