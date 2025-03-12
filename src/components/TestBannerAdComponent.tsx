@@ -1,9 +1,13 @@
 
-import React, { useRef, useEffect } from 'react';
+import React, { useRef, useEffect, useState } from 'react';
 import { isMobileApp } from '../utils/admobUtils';
 import * as mobileAds from 'react-native-google-mobile-ads';
 
-const TestBannerAdComponent: React.FC = () => {
+interface TestBannerAdComponentProps {
+  isVisible: boolean;
+}
+
+const TestBannerAdComponent: React.FC<TestBannerAdComponentProps> = ({ isVisible }) => {
   // Create a ref for the ad component
   const bannerRef = useRef(null);
 
@@ -21,8 +25,8 @@ const TestBannerAdComponent: React.FC = () => {
     };
   }, []);
 
-  // Show nothing in non-mobile environments
-  if (!isMobileApp()) {
+  // Don't render anything if not visible or not in mobile app
+  if (!isVisible || !isMobileApp()) {
     return null;
   }
 

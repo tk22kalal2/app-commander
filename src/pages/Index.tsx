@@ -11,6 +11,7 @@ import TestBannerAdComponent from "@/components/TestBannerAdComponent";
 
 const Index = () => {
   const navigate = useNavigate();
+  const [showTestAd, setShowTestAd] = useState(false);
 
   const handleStartPractice = () => {
     navigate("/auth");
@@ -20,6 +21,13 @@ const Index = () => {
     localStorage.removeItem("groq_api_key");
     toast.success("API key removed successfully");
     navigate("/apikey");
+  };
+
+  const handleToggleTestAd = () => {
+    setShowTestAd(prev => !prev);
+    if (!showTestAd) {
+      toast.info("Test ad banner is now visible");
+    }
   };
 
   return (
@@ -50,8 +58,16 @@ const Index = () => {
               Add New API Key
             </Button>
             
+            <Button 
+              variant="outline"
+              className="bg-white hover:bg-gray-100 text-medblue border-medblue"
+              onClick={handleToggleTestAd}
+            >
+              {showTestAd ? "Hide Test Ad" : "Show Test Ad"}
+            </Button>
+            
             {/* Test Banner Ad Component */}
-            <TestBannerAdComponent />
+            <TestBannerAdComponent isVisible={showTestAd} />
           </div>
         </div>
       </section>
