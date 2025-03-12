@@ -68,15 +68,20 @@ export const initializeAdMob = async (): Promise<void> => {
   try {
     console.log('Initializing Google Mobile Ads SDK');
     
-    // Fix: Use the correct initialization method for the library
-    // mobileAds.initialize() does not exist, use RequestConfiguration instead
-    await mobileAds.setRequestConfiguration({
-      // Configuration options according to the react-native-google-mobile-ads API
-      maxAdContentRating: mobileAds.MaxAdContentRating.MA,
-      tagForChildDirectedTreatment: false,
-      tagForUnderAgeOfConsent: false,
-      testDeviceIdentifiers: ['EMULATOR']
-    });
+    // Fix: The correct way to initialize the SDK based on the actual API
+    // Instead of setRequestConfiguration, use the initialize method directly
+    await mobileAds.initialize();
+    
+    // Then set up the configuration if needed
+    if (mobileAds.RequestConfiguration) {
+      const requestConfig = new mobileAds.RequestConfiguration();
+      requestConfig.maxAdContentRating = mobileAds.MaxAdContentRating.MA;
+      requestConfig.tagForChildDirectedTreatment = false;
+      requestConfig.tagForUnderAgeOfConsent = false;
+      requestConfig.testDeviceIdentifiers = ['EMULATOR'];
+      
+      await mobileAds.setRequestConfiguration(requestConfig);
+    }
     
     console.log('Google Mobile Ads SDK initialized successfully');
     
@@ -140,7 +145,7 @@ export const showInterstitialAd = async (): Promise<void> => {
   }
   
   try {
-    // Fix: Use the correct property 'loaded' instead of 'isLoaded'
+    // Using the correct 'loaded' property
     if (interstitialAd && interstitialAd.loaded) {
       console.log('Showing interstitial ad');
       await interstitialAd.show();
@@ -203,7 +208,7 @@ export const showAppOpenAd = async (): Promise<void> => {
   }
   
   try {
-    // Fix: Use the correct property 'loaded' instead of 'isLoaded'
+    // Using the correct 'loaded' property
     if (appOpenAd && appOpenAd.loaded) {
       console.log('Showing app open ad');
       await appOpenAd.show();
