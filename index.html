@@ -7,7 +7,7 @@
     <title>Medquiz:AI-Powered Medical Exam Question Bank</title>
 
     <!-- Google AdSense -->
-    <script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-app-pub-5920367457745298"
+    <script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-5920367457745298"
      crossorigin="anonymous"></script>
 
     <!-- SEO Meta Tags -->
@@ -35,45 +35,24 @@
     <!-- Base URL -->
     <base href="/" />
 
-    <!-- Mobile App Detection -->
+    <!-- Prerender for SEO -->
     <script>
-      // Check if running in a mobile app environment
-      const isMobileApp = window.location.href.includes('capacitor://') || 
-                          window.location.href.includes('app://') ||
-                          document.URL.includes('app://') ||
-                          navigator.userAgent.includes('Median');
+      // Create static versions of dynamic routes for SEO
+      const routes = ['/blog', '/quiz/setup'];
+      const currentPath = window.location.pathname;
       
-      // Log environment information for debugging
-      console.log('App environment:', {
-        isMobileApp: isMobileApp,
-        userAgent: navigator.userAgent,
-        url: window.location.href
-      });
-      
-      // Dynamically load cordova script in mobile environments
-      if (isMobileApp && !window.cordova) {
-        console.log('Loading cordova.js for mobile environment');
-        const cordovaScript = document.createElement('script');
-        cordovaScript.src = 'cordova.js';
-        document.head.appendChild(cordovaScript);
+      if (routes.includes(currentPath)) {
+        document.addEventListener('DOMContentLoaded', function() {
+          // Force render the content immediately for crawlers
+          const root = document.getElementById('root');
+          if (root && !root.hasChildNodes()) {
+            const meta = document.createElement('meta');
+            meta.setAttribute('name', 'robots');
+            meta.setAttribute('content', 'noindex, nofollow');
+            document.head.appendChild(meta);
+          }
+        });
       }
-    </script>
-
-    <!-- Google Mobile Ads Configuration -->
-    <script>
-      // Define AdMob App ID and Ad Units
-      window.admobAppId = "ca-app-pub-5920367457745298~6087552730";
-      window.admobAdUnits = {
-        banner: "ca-app-pub-5920367457745298/9145499918",
-        interstitial: "ca-app-pub-5920367457745298/3026544626",
-        native: "ca-app-pub-5920367457745298/5613147695",
-        appOpen: "ca-app-pub-5920367457745298/7296993946"
-      };
-      
-      console.log('AdMob configuration loaded:', {
-        appId: window.admobAppId,
-        adUnits: window.admobAdUnits
-      });
     </script>
 
     <!-- GitHub Pages SPA Redirect -->

@@ -14,7 +14,6 @@ import Quiz from "./pages/Quiz";
 import Privacy from "./pages/Privacy";
 import Disclaimer from "./pages/Disclaimer";
 import { ApiKeyInput } from "./components/ApiKeyInput";
-import { initializeAdMob } from "./utils/admobUtils";
 
 const queryClient = new QueryClient({
   defaultOptions: {
@@ -58,11 +57,6 @@ const SEO = () => {
       metaDescription.setAttribute("content", description);
     }
   }, [location]);
-
-  // Initialize AdMob on application start
-  useEffect(() => {
-    initializeAdMob();
-  }, []);
 
   return null;
 };

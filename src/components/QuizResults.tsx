@@ -1,10 +1,9 @@
+
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Trophy } from "lucide-react";
 import { useEffect, useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { useNavigate } from "react-router-dom";
-import { showInterstitialAd } from '@/utils/admobUtils';
-import BannerAdComponent from './BannerAdComponent';
 
 interface QuizResultsProps {
   score: number;
@@ -47,14 +46,6 @@ export const QuizResults = ({
     };
     
     fetchUserName();
-    
-    // 80% chance to show interstitial ad when results are displayed
-    if (Math.random() < 0.8) {
-      setTimeout(() => {
-        console.log('QuizResults - showing interstitial ad');
-        showInterstitialAd();
-      }, 1500); // Slight delay for better user experience
-    }
   }, []);
   
   return (
@@ -80,15 +71,7 @@ export const QuizResults = ({
           </div>
           <div className="mt-8">
             <button 
-              onClick={() => {
-                // Show interstitial ad before navigating away
-                console.log('QuizResults - showing interstitial ad before navigation');
-                showInterstitialAd();
-                // Wait a bit for the ad to display before navigation
-                setTimeout(() => {
-                  navigate("/quiz/setup");
-                }, 800);
-              }}
+              onClick={() => navigate("/quiz/setup")}
               className="relative px-12 py-4 text-xl font-bold text-white bg-gradient-to-r from-teal-400 to-emerald-500 rounded-full overflow-hidden shadow-lg transition-all duration-300 hover:scale-105 hover:shadow-xl active:scale-95"
             >
               <span className="relative z-10">Let's Do Again</span>
@@ -97,9 +80,6 @@ export const QuizResults = ({
           </div>
         </CardContent>
       </Card>
-      
-      {/* Banner ad at the bottom of the page */}
-      <BannerAdComponent position="bottom" className="mt-4" />
     </div>
   );
 };
