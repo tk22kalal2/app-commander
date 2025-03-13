@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { generateQuestion, handleDoubt } from "@/services/groqService";
@@ -6,6 +5,7 @@ import { toast } from "sonner";
 import { QuizResults } from "./QuizResults";
 import { Textarea } from "./ui/textarea";
 import { Card } from "./ui/card";
+import { showBannerAd, showInterstitialAd, showRewardedAd, initializeAdMob } from "@/utils/admobUtils";
 
 interface QuizProps {
   subject: string;
@@ -352,25 +352,3 @@ export const Quiz = ({ subject, chapter, topic, difficulty, questionCount, timeL
     </div>
   );
 };
-
-// Add types for AdMob
-declare global {
-  interface Window {
-    admob?: {
-      initialize: (appId: string) => void;
-      AD_SIZE: {
-        SMART_BANNER: string;
-        LARGE_BANNER: string;
-        BANNER: string;
-        MEDIUM_RECTANGLE: string;
-        FULL_BANNER: string;
-        LEADERBOARD: string;
-      };
-      createBannerView: (options: any) => void;
-      showBannerAd: (show: boolean) => void;
-      prepareInterstitial: (options: any) => void;
-      prepareRewardVideoAd: (options: any) => void;
-    };
-    admobAppId: string;
-  }
-}

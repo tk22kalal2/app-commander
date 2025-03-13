@@ -21,6 +21,7 @@ interface Window {
       MEDIUM_RECTANGLE: string;
       FULL_BANNER: string;
       LEADERBOARD: string;
+      LARGE_BANNER: string;
       SKYSCRAPER: string;
       CUSTOM: string;
     };
