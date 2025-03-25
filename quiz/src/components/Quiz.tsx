@@ -1,8 +1,12 @@
+
 import { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { generateQuestion } from "@/services/groqService";
 import { toast } from "sonner";
 import { QuizResults } from "./QuizResults";
+import { NativeAd } from "./ads/NativeAd";
+import { InArticleAd } from "./ads/InArticleAd";
+import { QuizAd } from "./ads/QuizAd";
 
 interface QuizProps {
   subject: string;
@@ -116,15 +120,18 @@ export const Quiz = ({ subject, chapter, topic, difficulty, questionCount, timeL
 
   if (isQuizComplete) {
     return (
-      <QuizResults 
-        score={score} 
-        totalQuestions={parseInt(questionCount)} 
-        onRestartQuiz={handleRestartQuiz}
-        subject={subject}
-        chapter={chapter}
-        topic={topic}
-        difficulty={difficulty}
-      />
+      <>
+        <QuizAd className="my-4" />
+        <QuizResults 
+          score={score} 
+          totalQuestions={parseInt(questionCount)} 
+          subject={subject}
+          chapter={chapter}
+          topic={topic}
+          difficulty={difficulty}
+        />
+        <NativeAd className="my-8" />
+      </>
     );
   }
 
@@ -134,6 +141,9 @@ export const Quiz = ({ subject, chapter, topic, difficulty, questionCount, timeL
 
   return (
     <div className="max-w-4xl mx-auto p-6 space-y-6 mt-16">
+      {/* Top Ad */}
+      <QuizAd className="mb-4" />
+      
       <div className="flex justify-between items-center">
         <div className="text-lg font-semibold">
           Question {questionNumber} {questionCount !== "No Limit" && `of ${questionCount}`}
@@ -162,6 +172,8 @@ export const Quiz = ({ subject, chapter, topic, difficulty, questionCount, timeL
           ))}
         </div>
 
+        {questionNumber % 2 === 0 && <InArticleAd className="my-6" />}
+
         {selectedAnswer && (
           <div className="mt-6">
             <Button
@@ -174,6 +186,7 @@ export const Quiz = ({ subject, chapter, topic, difficulty, questionCount, timeL
             {showExplanation && (
               <div className="bg-gray-50 p-4 rounded-md">
                 <p className="text-gray-700">{currentQuestion.explanation}</p>
+                <NativeAd className="mt-6" />
               </div>
             )}
             <Button onClick={handleNext} className="mt-4">
@@ -182,6 +195,9 @@ export const Quiz = ({ subject, chapter, topic, difficulty, questionCount, timeL
           </div>
         )}
       </div>
+      
+      {/* Bottom Ad */}
+      <NativeAd className="mt-6" />
     </div>
   );
 };
