@@ -1,3 +1,4 @@
+
 import { useState, useEffect } from "react";
 import { Navbar } from "@/components/Navbar";
 import { Footer } from "@/components/Footer";
@@ -133,9 +134,16 @@ const TakeQuiz = () => {
         return;
       }
       
-      const uniqueQuestions = Array.from(
-        new Map(questionData.map(q => [q.id, q])).values()
-      );
+      // Fix for duplication: Use a Map with question_text as key to ensure uniqueness
+      // This ensures we don't have questions with identical text
+      const uniqueQuestionsMap = new Map();
+      questionData.forEach(q => {
+        if (!uniqueQuestionsMap.has(q.question_text)) {
+          uniqueQuestionsMap.set(q.question_text, q);
+        }
+      });
+      
+      const uniqueQuestions = Array.from(uniqueQuestionsMap.values());
       
       setQuestions(uniqueQuestions);
       setIsVerified(true);
