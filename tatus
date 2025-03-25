@@ -1,0 +1,146 @@
+[33me3f8f8c[m[33m ([m[1;36mHEAD[m[33m -> [m[1;32mmain[m[33m, [m[1;31morigin/main[m[33m)[m Fix TypeScript type error
+[33mf380cdd[m Fix package installation error
+[33mec37a26[m Reverted to edit edt-1fc17bda-7576-4317-ba4f-e30dd3a49d4c: "Integrate Google AdMob Ads
+[33ma228a32[m Update Index.tsx
+[33m82b6960[m Hide test ad button
+[33m43663ba[m Add button to show test ad
+[33m73f33d9[m Add banner ad component
+[33m41899f9[m Fix AdMob initialization errors
+[33m0542672[m Fix AdMob initialization error
+[33m7617ed9[m Fix TypeScript errors in AdMob utils
+[33mab10545[m Integrate react-native-google-mobile-ads
+[33mf7f94a3[m Create app.json
+[33me79a15f[m Update package-lock.json
+[33m3709fbc[m Update package.json
+[33m25057ce[m Fix type error in admobUtils
+[33m85dc7a1[m Fix TypeScript errors in AdMob utils
+[33m475e325[m Install react-native-google-mobile-ads
+[33m4840d44[m Ensure AdMob SDK Integration
+[33m8cb9a16[m Fix: Resolve TypeScript type conflict
+[33me5b530d[m Fix broken homepage
+[33m91878ba[m Recheck AdMob integration
+[33m7eacd7e[m Recheck code for errors
+[33mef0d28f[m Fix import path in main.tsx
+[33maeecbbb[m Configure Google AdMob IDs
+[33mc196d9c[m Integrate Google AdMob Ads
+[33mf462b6a[m Add robots.txt file
+[33m1cd4138[m Fix: Google AdSense crawler error
+[33m4b21871[m Fix: Clear previous question's doubt
+[33mc77fa6c[m Implement doubt-asking functionality
+[33mb4521c7[m Improve Quiz UI/UX
+[33m984f96b[m Remove unnecessary blog.html page
+[33m3734f9c[m Implement Server-Side Rendering
+[33m99f16d8[m Fix: Redirect on "Add New API Key" click
+[33m3ef2120[m Add API key reset functionality
+[33m9021e36[m Fix: Blog navigation and NEET PG link
+[33m938a1e0[m Create neetpg.html
+[33mf2fce07[m Add blog redirect and GitHub workflow update
+[33me2b9f9b[m Update deploy.yml
+[33m5c7a3e4[m Delete blog.html
+[33md40397a[m Delete public/blog.html
+[33m421a716[m Update blog page and deployment
+[33ma39b77d[m Fix: Blog navigation
+[33m8b6fb52[m Address indexing issues
+[33m01fd830[m Fix: Improve SEO for Blog and Quiz pages
+[33m5173432[m Fix: Improve Google Search Console indexing
+[33mccec5ae[m Improve SEO and indexing
+[33m4d9ac06[m Add Google AdSense script
+[33md88b5ba[m Fix: Sitemap.xml not found
+[33m27ddffa[m Fix: Navbar Privacy & Disclaimer Links
+[33m08db2ef[m Fix: Resolve index.html inclusion error
+[33ma7b1d0e[m Update landing page
+[33mf9b4ff4[m Update Navbar.tsx
+[33m6c83432[m Add privacy, disclaimer, and sitemap
+[33m5da59ad[m Update Lovable template
+[33m998a4f6[m Migrating repository
+[33mc3bdda3[m Create Disclaimer.html
+[33m3fc0db6[m Create privacy-policy.html
+[33mf2eb44f[m Update Blog.tsx
+[33m4ade4a2[m Add files via upload
+[33mf9f242d[m Update Blog.tsx
+[33mc2d530c[m Rename 2132.jpg_wh300.svg to 2132.jpg_wh300.jpg
+[33m7ba0849[m Rename 2132.jpg_wh300.jpg to 2132.jpg_wh300.svg
+[33m9c99bf0[m Add files via upload
+[33mdfbf547[m Update index.html
+[33mf0eb62b[m Update index.html
+[33me5aebf3[m Rename Your paragraph text.png to fevicon.png
+[33m6d3e07f[m Add files via upload
+[33m7896938[m Update index.html
+[33mabc93f8[m Rename Your paragraph text.png to favicon.ico
+[33mdf75934[m Rename favicon.ico to faviconX.ico
+[33m823baaa[m Add files via upload
+[33md7e28f7[m Update index.html
+[33m3000d01[m Update Footer.tsx
+[33mec792aa[m Update QuizResults.tsx
+[33maf14447[m Update ApiKeyInput.tsx
+[33m9ed2485[m Update and rename sitemap (3).xml to sitemap.xml
+[33m7cd1ca6[m Add files via upload
+[33m7809db4[m Add new buttons
+[33m71ff773[m Fix: Redirect to question settings after API key input
+[33m4a0aa41[m Fix: Remove custom "Start Quiz" button
+[33mee77c3a[m Update Quiz Start and Restart Buttons
+[33m29d3979[m Fix QuizResultsProps type error
+[33mf0c6c3c[m Improve Quiz Start and Result Buttons
+[33m2d45d3f[m Update QuizSetupForm.tsx
+[33mb6c39a5[m Update QuizSetupForm.tsx
+[33m84bd610[m Update QuizSetupForm.tsx
+[33md6832dd[m Update CNAME
+[33m1b1b4d5[m Fix: Custom domain deployment issue
+[33me01b75a[m Create CNAME
+[33m2b056ad[m Fix: Deploy to GitHub Pages with custom domain
+[33m755731a[m Delete CNAME
+[33m5831491[m Create CNAME
+[33m23ede81[m Reverted to edit edt-0365d935-ec47-4c9f-92c6-8b897bff9799: "Refactor: Restyle start quiz button
+[33mdfb3647[m Create CNAME
+[33mdc8e816[m Fix: Deployment issues
+[33m66ca5f4[m Delete CNAME
+[33m4c26ae0[m Fix: Resolve app rendering issues
+[33mc3c2133[m Update CNAME
+[33mdfc36bd[m Fix: Deployment issue causing white page
+[33m89171da[m Create CNAME
+[33m27ddf08[m Fix: App.tsx inclusion error
+[33m8259270[m Delete CNAME
+[33md405ac4[m Create CNAME
+[33mfa07d12[m Delete CNAME
+[33md9c8cab[m Create CNAME
+[33m8f7af15[m Delete CNAME
+[33md4af498[m Update CNAME
+[33m1896a3d[m Deploy to custom domain
+[33m0b4dce1[m Create CNAME
+[33m0622592[m Delete CNAME
+[33mb9bbe2e[m Create CNAME
+[33m779e111[m Refactor: Restyle start quiz button
+[33mbf6fd46[m Improve Quiz UI
+[33ma41f643[m Add "Start Quiz" button
+[33m1c9aae0[m Run SQL script
+[33m0a6c800[m Update Blog.tsx
+[33me95e36a[m Add files via upload
+[33m8b78997[m Add files via upload
+[33m8c982a7[m Implement remaining quiz components
+[33ma0e9d1b[m Run database migrations
+[33m37fbc23[m Fix: 404 error on page load
+[33m64f6dd0[m Fix: Login route 404 error
+[33m3c7febd[m Integrate quiz and landing pages
+[33mdda2626[m Deploy combined app with GitHub Pages
+[33m6fe39e2[m Fix deployment workflow and 404 error
+[33m29f0057[m Delete CNAME
+[33m38a5b37[m Integrate quiz and medquiz-genius apps
+[33m8390d72[m Fix: Resolve 404 error on login
+[33m273b7d5[m Connect to Supabase project
+[33m1f1a92c[m Create deploy.yml
+[33mb8c1ca4[m Integrate quiz application
+[33mf36ab3f[m Create CNAME
+[33mb2a5a5f[m Update Navbar.tsx
+[33mdef8066[m Added groqmed-quizmaster contents to quiz folder
+[33m9d946e4[m Create a
+[33m494b6c1[m Enhance Blog and Main Pages
+[33m32bfe19[m Improve Blog Page Content
+[33m066dc47[m Fix: Address file inclusion error
+[33m142161a[m Rename A FREE AI MEDICAL QUIZ SYSTEM FOR NEET PG USMLE INICET FMPG MBBS ETC RUN BY GROQ AI API KEY (1).html to blog.html
+[33m320a7ad[m Add files via upload
+[33m18ab805[m Update card layout on Index page
+[33mf4f646d[m Update Index Page Content
+[33m2f36760[m Fix runtime errors in app
+[33m1cf56f3[m Fix null reading error
+[33m62c68e8[m Add medical quiz website features
+[33m4ee5ad0[m Use tech stack vite_react_shadcn_ts [skip gpt_engineer]
