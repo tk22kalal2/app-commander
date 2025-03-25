@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from "react";
 import { Navbar } from "@/components/Navbar";
 import { Footer } from "@/components/Footer";
@@ -98,7 +97,6 @@ const QuizResults = () => {
         
         if (quizError) throw quizError;
         
-        // Create a modified quiz object with the creator_name property
         const quizWithCreator = { ...quizData, creator_name: undefined }; 
         
         const { data: creatorData } = await supabase
@@ -131,7 +129,6 @@ const QuizResults = () => {
         
         setRankings(formattedRankings);
         
-        // Fetch questions for analysis
         const { data: questionsData, error: questionsError } = await supabase
           .from('quiz_questions')
           .select('*')
@@ -140,11 +137,14 @@ const QuizResults = () => {
         if (questionsError) throw questionsError;
         
         if (questionsData) {
-          // Remove any potential duplicates by using a Map with question IDs as keys
-          const uniqueQuestions = Array.from(
-            new Map(questionsData.map(q => [q.id, q])).values()
-          );
-          setQuestions(uniqueQuestions);
+          const uniqueQuestionsMap = new Map();
+          questionsData.forEach(q => {
+            if (!uniqueQuestionsMap.has(q.question_text)) {
+              uniqueQuestionsMap.set(q.question_text, q);
+            }
+          });
+          
+          setQuestions(Array.from(uniqueQuestionsMap.values()));
         }
       } catch (error: any) {
         console.error("Error fetching result:", error);
@@ -324,7 +324,6 @@ const QuizResults = () => {
                   </Card>
                 </div>
                 
-                {/* Question Analysis Section */}
                 {questions.length > 0 && (
                   <div className="w-full mt-8">
                     <h3 className="text-xl font-semibold mb-4 text-left">Question Analysis</h3>

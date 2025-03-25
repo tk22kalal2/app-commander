@@ -161,7 +161,8 @@ export const QuizResults = ({
               <h3 className="font-semibold text-lg mb-4">Review Questions</h3>
               
               <div className="flex flex-wrap gap-2 mb-6 justify-center">
-                {questions.map((_, index) => (
+                {/* Use Array.from(new Set()) to ensure unique question indices */}
+                {Array.from(new Set(questions.map((_, index) => index))).map((index) => (
                   <button
                     key={index}
                     className={`h-10 w-10 rounded-full flex items-center justify-center text-sm ${
@@ -180,7 +181,7 @@ export const QuizResults = ({
                 ))}
               </div>
               
-              {selectedQuestionIndex !== null && (
+              {selectedQuestionIndex !== null && questions[selectedQuestionIndex] && (
                 <Card className="p-4 mb-6">
                   <h4 className="font-medium text-lg">
                     Question {selectedQuestionIndex + 1}: {questions[selectedQuestionIndex].question}
