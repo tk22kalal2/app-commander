@@ -7,7 +7,9 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { useNavigate, useParams } from "react-router-dom";
 import { toast } from "sonner";
 import { supabase } from "@/integrations/supabase/client";
-import { Loader2, Medal, Share, Trophy, Users } from "lucide-react";
+import { BookOpenText, Loader2, Medal, MessageCircleQuestion, Share, Trophy, Users } from "lucide-react";
+import { Textarea } from "@/components/ui/textarea";
+import { handleDoubt } from "@/services/groqService";
 
 interface QuizResult {
   id: string;
@@ -30,7 +32,19 @@ interface CustomQuiz {
   access_code?: string | null;
   created_at: string;
   updated_at: string;
-  creator_name?: string; // Added this optional property
+  creator_name?: string;
+}
+
+interface Question {
+  id: string;
+  question_text: string;
+  image_url?: string | null;
+  option_a: string;
+  option_b: string;
+  option_c: string;
+  option_d: string;
+  correct_answer: string;
+  explanation?: string | null;
 }
 
 interface Ranking {
@@ -41,12 +55,24 @@ interface Ranking {
   created_at: string;
 }
 
+interface DoubtMessage {
+  type: 'doubt' | 'answer';
+  content: string;
+}
+
 const QuizResults = () => {
   const { id } = useParams<{ id: string }>();
   const [result, setResult] = useState<QuizResult | null>(null);
   const [quiz, setQuiz] = useState<CustomQuiz | null>(null);
   const [rankings, setRankings] = useState<Ranking[]>([]);
   const [isLoading, setIsLoading] = useState(true);
+  const [questions, setQuestions] = useState<Question[]>([]);
+  const [selectedQuestionIndex, setSelectedQuestionIndex] = useState<number | null>(null);
+  const [userAnswers, setUserAnswers] = useState<Record<string, string>>({});
+  const [showExplanation, setShowExplanation] = useState(false);
+  const [doubt, setDoubt] = useState("");
+  const [doubtMessages, setDoubtMessages] = useState<Record<number, DoubtMessage[]>>({});
+  const [isLoadingAnswer, setIsLoadingAnswer] = useState(false);
   const navigate = useNavigate();
 
   useEffect(() => {
@@ -104,6 +130,22 @@ const QuizResults = () => {
         }));
         
         setRankings(formattedRankings);
+        
+        // Fetch questions for analysis
+        const { data: questionsData, error: questionsError } = await supabase
+          .from('quiz_questions')
+          .select('*')
+          .eq('quiz_id', resultData.quiz_id);
+          
+        if (questionsError) throw questionsError;
+        
+        if (questionsData) {
+          // Remove any potential duplicates by using a Map with question IDs as keys
+          const uniqueQuestions = Array.from(
+            new Map(questionsData.map(q => [q.id, q])).values()
+          );
+          setQuestions(uniqueQuestions);
+        }
       } catch (error: any) {
         console.error("Error fetching result:", error);
         toast.error("Failed to load result: " + error.message);
@@ -168,6 +210,45 @@ const QuizResults = () => {
       r.score === result.score && 
       r.total_questions === result.total_questions
     ) + 1;
+  };
+
+  const handleAskDoubt = async (questionIndex: number) => {
+    if (!doubt.trim()) {
+      toast.error("Please enter your doubt first");
+      return;
+    }
+
+    if (!questions[questionIndex]) return;
+    const question = questions[questionIndex];
+
+    setIsLoadingAnswer(true);
+    const newDoubtMessage = { type: 'doubt' as const, content: doubt };
+    
+    setDoubtMessages(prev => ({
+      ...prev,
+      [questionIndex]: [...(prev[questionIndex] || []), newDoubtMessage]
+    }));
+
+    const answer = await handleDoubt(
+      doubt,
+      question.question_text,
+      [`A) ${question.option_a}`, `B) ${question.option_b}`, `C) ${question.option_c}`, `D) ${question.option_d}`],
+      question.correct_answer,
+      question.explanation || ""
+    );
+
+    if (answer) {
+      setDoubtMessages(prev => ({
+        ...prev,
+        [questionIndex]: [
+          ...(prev[questionIndex] || []), 
+          { type: 'answer' as const, content: answer }
+        ]
+      }));
+    }
+
+    setDoubt("");
+    setIsLoadingAnswer(false);
   };
 
   if (isLoading) {
@@ -242,6 +323,156 @@ const QuizResults = () => {
                     </CardContent>
                   </Card>
                 </div>
+                
+                {/* Question Analysis Section */}
+                {questions.length > 0 && (
+                  <div className="w-full mt-8">
+                    <h3 className="text-xl font-semibold mb-4 text-left">Question Analysis</h3>
+                    
+                    <div className="flex flex-wrap gap-2 mb-6 justify-center">
+                      {questions.map((_, index) => (
+                        <button
+                          key={index}
+                          className={`h-10 w-10 rounded-full flex items-center justify-center text-sm ${
+                            index === selectedQuestionIndex
+                              ? 'bg-medblue text-white'
+                              : 'bg-gray-100 border'
+                          }`}
+                          onClick={() => {
+                            setSelectedQuestionIndex(index);
+                            setShowExplanation(false);
+                          }}
+                        >
+                          {index + 1}
+                        </button>
+                      ))}
+                    </div>
+                    
+                    {selectedQuestionIndex !== null && (
+                      <Card className="p-4 mb-6">
+                        <h4 className="font-medium text-lg">
+                          Question {selectedQuestionIndex + 1}: {questions[selectedQuestionIndex].question_text}
+                        </h4>
+                        
+                        {questions[selectedQuestionIndex].image_url && (
+                          <div className="my-4">
+                            <img 
+                              src={questions[selectedQuestionIndex].image_url} 
+                              alt="Question" 
+                              className="rounded-md border border-gray-200 max-h-[300px] object-contain mx-auto"
+                            />
+                          </div>
+                        )}
+                        
+                        <div className="mt-4 space-y-2">
+                          <div 
+                            className={`p-3 rounded border ${
+                              'A' === questions[selectedQuestionIndex].correct_answer
+                                ? 'bg-green-50 border-green-300'
+                                : userAnswers[questions[selectedQuestionIndex].id] === 'A'
+                                ? 'bg-red-50 border-red-300'
+                                : 'bg-gray-50 border-gray-200'
+                            }`}
+                          >
+                            A) {questions[selectedQuestionIndex].option_a}
+                          </div>
+                          
+                          <div 
+                            className={`p-3 rounded border ${
+                              'B' === questions[selectedQuestionIndex].correct_answer
+                                ? 'bg-green-50 border-green-300'
+                                : userAnswers[questions[selectedQuestionIndex].id] === 'B'
+                                ? 'bg-red-50 border-red-300'
+                                : 'bg-gray-50 border-gray-200'
+                            }`}
+                          >
+                            B) {questions[selectedQuestionIndex].option_b}
+                          </div>
+                          
+                          <div 
+                            className={`p-3 rounded border ${
+                              'C' === questions[selectedQuestionIndex].correct_answer
+                                ? 'bg-green-50 border-green-300'
+                                : userAnswers[questions[selectedQuestionIndex].id] === 'C'
+                                ? 'bg-red-50 border-red-300'
+                                : 'bg-gray-50 border-gray-200'
+                            }`}
+                          >
+                            C) {questions[selectedQuestionIndex].option_c}
+                          </div>
+                          
+                          <div 
+                            className={`p-3 rounded border ${
+                              'D' === questions[selectedQuestionIndex].correct_answer
+                                ? 'bg-green-50 border-green-300'
+                                : userAnswers[questions[selectedQuestionIndex].id] === 'D'
+                                ? 'bg-red-50 border-red-300'
+                                : 'bg-gray-50 border-gray-200'
+                            }`}
+                          >
+                            D) {questions[selectedQuestionIndex].option_d}
+                          </div>
+                        </div>
+                        
+                        <div className="mt-4">
+                          <Button
+                            onClick={() => setShowExplanation(!showExplanation)}
+                            variant="outline"
+                            className="flex items-center gap-2"
+                          >
+                            <BookOpenText className="h-4 w-4" />
+                            {showExplanation ? "Hide" : "Show"} Explanation
+                          </Button>
+                        </div>
+                        
+                        {showExplanation && questions[selectedQuestionIndex].explanation && (
+                          <div className="mt-4">
+                            <h5 className="font-medium">Explanation:</h5>
+                            <p className="mt-2 text-gray-700">{questions[selectedQuestionIndex].explanation}</p>
+                          </div>
+                        )}
+                        
+                        <div className="mt-6 border-t pt-4">
+                          <h5 className="font-medium flex items-center gap-2 mb-3">
+                            <MessageCircleQuestion className="h-5 w-5 text-medblue" />
+                            Ask a Doubt
+                          </h5>
+                          
+                          <div className="space-y-4">
+                            {doubtMessages[selectedQuestionIndex]?.map((message, index) => (
+                              <div
+                                key={index}
+                                className={`p-3 rounded-lg ${
+                                  message.type === 'doubt'
+                                    ? 'bg-blue-50 ml-auto max-w-[80%]'
+                                    : 'bg-gray-50 mr-auto max-w-[80%]'
+                                }`}
+                              >
+                                <p className="text-sm">{message.content}</p>
+                              </div>
+                            ))}
+                            
+                            <div className="flex gap-2">
+                              <Textarea
+                                placeholder="Ask any doubt about this question..."
+                                value={doubt}
+                                onChange={(e) => setDoubt(e.target.value)}
+                                className="flex-1"
+                              />
+                              <Button 
+                                onClick={() => handleAskDoubt(selectedQuestionIndex)}
+                                disabled={isLoadingAnswer}
+                                className="self-end"
+                              >
+                                Ask Doubt
+                              </Button>
+                            </div>
+                          </div>
+                        </div>
+                      </Card>
+                    )}
+                  </div>
+                )}
                 
                 <div className="flex flex-wrap gap-4 justify-center mt-4">
                   <Button 

@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from "react";
 import { Navbar } from "@/components/Navbar";
 import { Footer } from "@/components/Footer";
@@ -22,7 +21,7 @@ interface CustomQuiz {
   creator_id: string;
   created_at: string;
   updated_at: string;
-  creator_name?: string; // Added this optional property
+  creator_name?: string;
 }
 
 interface Question {
@@ -63,7 +62,6 @@ const TakeQuiz = () => {
         
         if (quizError) throw quizError;
         
-        // Create a modified quiz object with the creator_name property
         const quizWithCreator = { ...quizData, creator_name: undefined };
         
         const { data: creatorData } = await supabase
@@ -135,7 +133,11 @@ const TakeQuiz = () => {
         return;
       }
       
-      setQuestions(questionData);
+      const uniqueQuestions = Array.from(
+        new Map(questionData.map(q => [q.id, q])).values()
+      );
+      
+      setQuestions(uniqueQuestions);
       setIsVerified(true);
       
       if (quiz.time_per_question !== 'No Limit') {
