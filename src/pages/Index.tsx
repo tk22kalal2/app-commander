@@ -4,15 +4,24 @@ import { ApiKeyInput } from "@/components/ApiKeyInput";
 import { Button } from "@/components/ui/button";
 import { Navbar } from "@/components/Navbar";
 import { Footer } from "@/components/Footer";
-import { Book } from "lucide-react";
+import { Book, Edit } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import { toast } from "sonner";
+import { HorizontalAd } from "@/components/ads/HorizontalAd";
+import { SquareAd } from "@/components/ads/SquareAd";
+import { InArticleAd } from "@/components/ads/InArticleAd";
+import { MultiplexHorizontalAd } from "@/components/ads/MultiplexHorizontalAd";
+import { MultiplexVerticalAd } from "@/components/ads/MultiplexVerticalAd";
 
 const Index = () => {
   const navigate = useNavigate();
 
   const handleStartPractice = () => {
     navigate("/auth");
+  };
+
+  const handleCreateQuiz = () => {
+    navigate("/auth", { state: { redirectTo: "/quiz/create" } });
   };
 
   const handleResetApiKey = () => {
@@ -34,16 +43,23 @@ const Index = () => {
           <p className="text-xl text-gray-600 dark:text-gray-300 mb-8">
             Comprehensive preparation for NEET PG, INICET, FMGE, USMLE, and MBBS with our intelligent quiz platform
           </p>
-          <div className="flex flex-col items-center gap-4">
+          <div className="flex flex-col sm:flex-row items-center justify-center gap-4">
             <Button 
-              className="bg-medteal hover:bg-medteal/90 text-white"
+              className="bg-medteal hover:bg-medteal/90 text-white w-full sm:w-auto"
               onClick={handleStartPractice}
             >
               Start Free Practice
             </Button>
             <Button 
+              className="bg-medblue hover:bg-medblue/90 text-white w-full sm:w-auto flex items-center gap-2"
+              onClick={handleCreateQuiz}
+            >
+              <Edit size={16} />
+              Make Your Own Questions
+            </Button>
+            <Button 
               variant="outline"
-              className="bg-white hover:bg-gray-100 text-medblue border-medblue"
+              className="bg-white hover:bg-gray-100 text-medblue border-medblue w-full sm:w-auto"
               onClick={handleResetApiKey}
             >
               Add New API Key
@@ -51,6 +67,11 @@ const Index = () => {
           </div>
         </div>
       </section>
+      
+      {/* Horizontal Ad below hero section */}
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+        <HorizontalAd />
+      </div>
 
       {/* Content Section with New Layout */}
       <section className="py-12 px-4 sm:px-6 lg:px-8">
@@ -92,6 +113,11 @@ const Index = () => {
               </div>
             </div>
           </div>
+          
+          {/* In-Article Ad in the middle */}
+          <div className="mb-8">
+            <InArticleAd />
+          </div>
 
           {/* Bottom Row - Centered Card */}
           <div className="max-w-3xl mx-auto">
@@ -114,12 +140,17 @@ const Index = () => {
         </div>
       </section>
 
+      {/* MultiplexHorizontal Ad */}
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 mb-8">
+        <MultiplexHorizontalAd />
+      </div>
+
       {/* YouTube Video Space */}
       <section className="py-12 px-4 sm:px-6 lg:px-8">
         <div className="max-w-3xl mx-auto">
           <div className="aspect-w-16 aspect-h-9 rounded-lg overflow-hidden">
             <iframe
-              src="https://www.youtube.com/embed/9KHLTZaJcR8"
+              src="https://www.youtube.com/embed/B5NC8zQXesE?si"
               title="MedQuizAI Tutorial"
               allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
               allowFullScreen
@@ -128,6 +159,16 @@ const Index = () => {
           </div>
         </div>
       </section>
+      
+      {/* Square Ad */}
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 mb-8">
+        <SquareAd />
+      </div>
+      
+      {/* MultiplexVertical Ad near footer */}
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 mb-8">
+        <MultiplexVerticalAd />
+      </div>
 
       <Footer />
     </div>
