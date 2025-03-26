@@ -1,3 +1,4 @@
+
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Trophy, BookOpenText, MessageCircleQuestion } from "lucide-react";
@@ -42,7 +43,7 @@ export const QuizResults = ({
   chapter,
   topic,
   difficulty,
-  questions = [],
+  questions: initialQuestions = [],
   answers = {},
   onJumpToQuestion,
   simultaneousResults = true
@@ -53,6 +54,7 @@ export const QuizResults = ({
   const [doubtMessages, setDoubtMessages] = useState<Record<number, DoubtMessage[]>>({});
   const [isLoadingAnswer, setIsLoadingAnswer] = useState(false);
   const [showExplanation, setShowExplanation] = useState(false);
+  const [questions, setQuestions] = useState<Question[]>(initialQuestions);
   const percentage = Math.round((score / totalQuestions) * 100);
   const navigate = useNavigate();
   
@@ -80,14 +82,14 @@ export const QuizResults = ({
 
   useEffect(() => {
     const uniqueQuestionsMap = new Map();
-    questions.forEach(q => {
+    initialQuestions.forEach(q => {
       if (!uniqueQuestionsMap.has(q.question)) {
         uniqueQuestionsMap.set(q.question, q);
       }
     });
     const uniqueQuestions = Array.from(uniqueQuestionsMap.values());
     setQuestions(uniqueQuestions);
-  }, [questions]);
+  }, [initialQuestions]);
 
   const handleAskDoubt = async (questionIndex: number) => {
     if (!doubt.trim()) {
