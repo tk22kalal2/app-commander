@@ -9,6 +9,7 @@ import { SquareAd } from "./ads/SquareAd";
 import { Textarea } from "./ui/textarea";
 import { handleDoubt } from "@/services/groqService";
 import { toast } from "sonner";
+import { StarRating } from "./StarRating";
 
 interface Question {
   question: string;
@@ -34,6 +35,7 @@ interface QuizResultsProps {
   answers?: Record<number, string>;
   onJumpToQuestion?: (index: number) => void;
   simultaneousResults?: boolean;
+  quizId?: string;
 }
 
 export const QuizResults = ({ 
@@ -46,7 +48,8 @@ export const QuizResults = ({
   questions: initialQuestions = [],
   answers = {},
   onJumpToQuestion,
-  simultaneousResults = true
+  simultaneousResults = true,
+  quizId
 }: QuizResultsProps) => {
   const [userName, setUserName] = useState<string>("");
   const [selectedQuestionIndex, setSelectedQuestionIndex] = useState<number | null>(null);
@@ -55,6 +58,8 @@ export const QuizResults = ({
   const [isLoadingAnswer, setIsLoadingAnswer] = useState(false);
   const [showExplanation, setShowExplanation] = useState(false);
   const [questions, setQuestions] = useState<Question[]>(initialQuestions);
+  const [averageRating, setAverageRating] = useState<number>(0);
+  const [userRating, setUserRating] = useState<number>(0);
   const percentage = Math.round((score / totalQuestions) * 100);
   const navigate = useNavigate();
   
@@ -90,6 +95,44 @@ export const QuizResults = ({
     const uniqueQuestions = Array.from(uniqueQuestionsMap.values());
     setQuestions(uniqueQuestions);
   }, [initialQuestions]);
+
+  useEffect(() => {
+    if (quizId) {
+      fetchQuizRatings();
+    }
+  }, [quizId]);
+
+  const fetchQuizRatings = async () => {
+    if (!quizId) return;
+
+    try {
+      // Get average rating
+      const { data: avgData, error: avgError } = await supabase
+        .rpc('get_quiz_avg_rating', { quiz_uuid: quizId });
+      
+      if (avgError) throw avgError;
+      setAverageRating(Number(avgData) || 0);
+      
+      // Get user's rating if logged in
+      const { data: { user } } = await supabase.auth.getUser();
+      
+      if (user) {
+        const { data: userRatingData, error: userRatingError } = await supabase
+          .from('quiz_ratings')
+          .select('rating')
+          .eq('quiz_id', quizId)
+          .eq('user_id', user.id)
+          .maybeSingle();
+        
+        if (userRatingError) throw userRatingError;
+        if (userRatingData) {
+          setUserRating(userRatingData.rating);
+        }
+      }
+    } catch (error: any) {
+      console.error("Error fetching ratings:", error);
+    }
+  };
 
   const handleAskDoubt = async (questionIndex: number) => {
     if (!doubt.trim()) {
@@ -139,6 +182,11 @@ export const QuizResults = ({
       setShowExplanation(false);
     }
   };
+
+  const handleRated = (rating: number) => {
+    setUserRating(rating);
+    fetchQuizRatings();
+  };
   
   return (
     <div className="max-w-2xl mx-auto p-6">
@@ -161,6 +209,24 @@ export const QuizResults = ({
           <div className="text-2xl text-gray-600">
             {percentage}% Correct
           </div>
+          
+          {quizId && (
+            <div className="flex flex-col items-center gap-2 py-4 border-t border-b">
+              <div className="text-lg font-medium">Rate this quiz</div>
+              <div className="flex items-center gap-4">
+                <StarRating 
+                  quizId={quizId} 
+                  initialRating={userRating} 
+                  onRated={handleRated}
+                />
+                {averageRating > 0 && (
+                  <div className="text-sm text-gray-500">
+                    Average: {averageRating.toFixed(1)}/5
+                  </div>
+                )}
+              </div>
+            </div>
+          )}
           
           {/* Ad within results */}
           <div className="my-4">

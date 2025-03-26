@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { generateQuestion, handleDoubt } from "@/services/groqService";
@@ -20,6 +19,7 @@ interface QuizProps {
   questionCount: string;
   timeLimit: string;
   simultaneousResults: boolean;
+  quizId: string;
 }
 
 interface Question {
@@ -42,7 +42,8 @@ export const Quiz = ({
   difficulty, 
   questionCount, 
   timeLimit,
-  simultaneousResults = true
+  simultaneousResults = true,
+  quizId
 }: QuizProps) => {
   const [questions, setQuestions] = useState<Question[]>([]);
   const [currentQuestionIndex, setCurrentQuestionIndex] = useState(0);
@@ -68,7 +69,6 @@ export const Quiz = ({
       setIsLoadingQuestion(true);
       
       if (questionCount !== "No Limit") {
-        // Only load the number of questions specified
         const count = parseInt(questionCount);
         const loadedQuestions: Question[] = [];
         
@@ -89,7 +89,6 @@ export const Quiz = ({
           setCurrentQuestion(loadedQuestions[0]);
         }
       } else {
-        // For unlimited mode, just load one question
         const question = await generateSingleQuestion();
         if (question) {
           setQuestions([question]);
@@ -154,7 +153,6 @@ export const Quiz = ({
   };
 
   const loadNewQuestion = async () => {
-    // Only load a new question for unlimited mode
     if (questionCount === "No Limit") {
       setIsLoadingQuestion(true);
       const newQuestion = await generateSingleQuestion();
@@ -181,7 +179,6 @@ export const Quiz = ({
         setScore(prev => prev + 1);
       }
       
-      // If simultaneous results, show explanation immediately
       if (simultaneousResults) {
         setShowExplanation(true);
       }
@@ -191,29 +188,23 @@ export const Quiz = ({
   const handleNext = () => {
     setAdCounter(prev => prev + 1);
     
-    // Check if we're at the end of available questions
     if (questionCount !== "No Limit" && currentQuestionIndex >= parseInt(questionCount) - 1) {
-      // If not showing simultaneous results, we need to complete the quiz
       if (!simultaneousResults) {
         setIsQuizComplete(true);
       } else {
-        // For simultaneousResults, we've already seen all questions, so finish
         setIsQuizComplete(true);
       }
       return;
     }
     
-    // Move to next question
     if (currentQuestionIndex < questions.length - 1) {
       setCurrentQuestionIndex(prev => prev + 1);
       setQuestionNumber(prev => prev + 1);
     } else {
-      // If unlimited, create new question
       setQuestionNumber(prev => prev + 1);
       loadNewQuestion();
     }
     
-    // Reset doubt messages for new question
     setDoubtMessages([]);
   };
 
@@ -224,7 +215,6 @@ export const Quiz = ({
 
   const handleSubmitQuiz = () => {
     if (!simultaneousResults) {
-      // Calculate the final score if not in simultaneous mode
       let finalScore = 0;
       Object.entries(answers).forEach(([indexStr, answer]) => {
         const index = parseInt(indexStr);
@@ -288,6 +278,7 @@ export const Quiz = ({
           answers={answers}
           onJumpToQuestion={handleJumpToQuestion}
           simultaneousResults={simultaneousResults}
+          quizId={quizId}
         />
       </>
     );
@@ -297,7 +288,6 @@ export const Quiz = ({
     return <div className="text-center p-8">Loading question...</div>;
   }
 
-  // For non-simultaneous results, we need a submit button at the end
   const isLastQuestion = questionCount !== "No Limit" && currentQuestionIndex >= parseInt(questionCount) - 1;
 
   return (
@@ -365,7 +355,6 @@ export const Quiz = ({
           ))}
         </div>
 
-        {/* In-Article Ad after every 2 questions */}
         {questionNumber % 2 === 0 && (
           <div className="my-6">
             <InArticleAd />
@@ -373,7 +362,6 @@ export const Quiz = ({
         )}
 
         {simultaneousResults ? (
-          // Simultaneous results UI
           selectedAnswer && (
             <div className="mt-6">
               <div className="flex justify-between items-center mb-4">
@@ -445,7 +433,6 @@ export const Quiz = ({
             </div>
           )
         ) : (
-          // Non-simultaneous results UI
           <div className="mt-6 flex justify-between">
             <Button 
               onClick={() => handleJumpToQuestion(Math.max(0, currentQuestionIndex - 1))}
@@ -474,7 +461,6 @@ export const Quiz = ({
         )}
       </div>
       
-      {/* Bottom Ad */}
       <div className="mt-6">
         <MultiplexHorizontalAd />
       </div>

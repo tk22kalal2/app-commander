@@ -1,105 +1,62 @@
-import { Toaster } from "@/components/ui/toaster";
-import { Toaster as Sonner } from "@/components/ui/sonner";
-import { TooltipProvider } from "@/components/ui/tooltip";
-import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
-import { BrowserRouter, Routes, Route, Navigate, useLocation } from "react-router-dom";
-import { useEffect } from "react";
-import Index from "./pages/Index";
-import Blog from "./pages/Blog";
-import NotFound from "./pages/NotFound";
-import Auth from "./pages/Auth";
-import QuizSetup from "./pages/QuizSetup";
-import Quiz from "./pages/Quiz";
-import Privacy from "./pages/Privacy";
-import Disclaimer from "./pages/Disclaimer";
-import { ApiKeyInput } from "./components/ApiKeyInput";
-import CreateQuiz from "./pages/CreateQuiz";
-import EditQuiz from "./pages/EditQuiz";
-import TakeQuiz from "./pages/TakeQuiz";
-import QuizResults from "./pages/QuizResults";
+import {
+  createBrowserRouter,
+  RouterProvider,
+} from "react-router-dom";
+import Index from "@/pages/Index";
+import Auth from "@/pages/Auth";
+import NotFound from "@/pages/NotFound";
+import ApiKeyInput from "@/pages/ApiKeyInput";
+import QuizSetup from "@/pages/QuizSetup";
+import TakeQuiz from "@/pages/TakeQuiz";
+import CreateQuiz from "@/pages/CreateQuiz";
+import Blog from "@/pages/Blog";
+import BlogPost from "@/pages/BlogPost";
+import BrowseQuizzes from "@/pages/BrowseQuizzes";
 
-const queryClient = new QueryClient({
-  defaultOptions: {
-    queries: {
-      staleTime: 5 * 60 * 1000,
-      retry: 1,
-    },
+const router = createBrowserRouter([
+  {
+    path: "/",
+    element: <Index />,
+    errorElement: <NotFound />,
   },
-});
+  {
+    path: "/auth",
+    element: <Auth />,
+  },
+  {
+    path: "/apikey",
+    element: <ApiKeyInput />,
+  },
+  {
+    path: "/quiz/setup",
+    element: <QuizSetup />,
+  },
+  {
+    path: "/browse-quizzes",
+    element: <BrowseQuizzes />,
+  },
+  {
+    path: "/quiz/take/:id",
+    element: <TakeQuiz />,
+  },
+  {
+    path: "/quiz/create",
+    element: <CreateQuiz />,
+  },
+  {
+    path: "/blog",
+    element: <Blog />,
+  },
+  {
+    path: "/blog/:id",
+    element: <BlogPost />,
+  },
+]);
 
-const SEO = () => {
-  const location = useLocation();
-
-  useEffect(() => {
-    const path = location.pathname;
-    let title = "Medquiz: AI-Powered Medical Exam Question Bank";
-    let description = "Free medical question bank for NEET PG, INI-CET, FMGE, USMLE, and MBBS preparation.";
-
-    switch (path) {
-      case '/blog':
-        title = "Medical Education Blog - Latest Updates & Study Guides | MedquizAI";
-        description = "Access comprehensive medical education resources, study guides, and exam preparation tips.";
-        break;
-      case '/quiz/setup':
-        title = "Customize Your Medical Quiz | MedquizAI";
-        description = "Create personalized medical practice tests with our AI-powered quiz system.";
-        break;
-      case '/privacy-policy':
-        title = "Privacy Policy | MedquizAI";
-        break;
-      case '/disclaimer':
-        title = "Disclaimer | MedquizAI";
-        break;
-    }
-
-    document.title = title;
-    const metaDescription = document.querySelector('meta[name="description"]');
-    if (metaDescription) {
-      metaDescription.setAttribute("content", description);
-    }
-  }, [location]);
-
-  return null;
-};
-
-const App = () => {
-  const path = window.location.pathname;
-  if (path === '/privacy-policy.html') {
-    window.location.href = '/privacy-policy';
-    return null;
-  }
-  if (path === '/disclaimer.html') {
-    window.location.href = '/disclaimer';
-    return null;
-  }
-
+function App() {
   return (
-    <QueryClientProvider client={queryClient}>
-      <TooltipProvider>
-        <BrowserRouter>
-          <SEO />
-          <Routes>
-            <Route path="/" element={<Index />} />
-            <Route path="/blog" element={<Blog />} />
-            <Route path="/auth" element={<Auth />} />
-            <Route path="/apikey" element={<ApiKeyInput onSave={() => {}} />} />
-            <Route path="/quiz/setup" element={<QuizSetup />} />
-            <Route path="/quiz" element={<Quiz />} />
-            <Route path="/quiz/create" element={<CreateQuiz />} />
-            <Route path="/quiz/edit/:id" element={<EditQuiz />} />
-            <Route path="/quiz/take/:id" element={<TakeQuiz />} />
-            <Route path="/quiz/results/:id" element={<QuizResults />} />
-            <Route path="/privacy-policy" element={<Privacy />} />
-            <Route path="/disclaimer" element={<Disclaimer />} />
-            <Route path="/404" element={<NotFound />} />
-            <Route path="*" element={<Navigate to="/404" replace />} />
-          </Routes>
-          <Toaster />
-          <Sonner />
-        </BrowserRouter>
-      </TooltipProvider>
-    </QueryClientProvider>
+    <RouterProvider router={router} />
   );
-};
+}
 
 export default App;

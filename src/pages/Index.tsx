@@ -4,7 +4,7 @@ import { ApiKeyInput } from "@/components/ApiKeyInput";
 import { Button } from "@/components/ui/button";
 import { Navbar } from "@/components/Navbar";
 import { Footer } from "@/components/Footer";
-import { Book, Edit } from "lucide-react";
+import { Book, Edit, Search } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import { toast } from "sonner";
 import { HorizontalAd } from "@/components/ads/HorizontalAd";
@@ -22,6 +22,10 @@ const Index = () => {
 
   const handleCreateQuiz = () => {
     navigate("/auth", { state: { redirectTo: "/quiz/create" } });
+  };
+
+  const handleBrowseQuizzes = () => {
+    navigate("/browse-quizzes");
   };
 
   const handleResetApiKey = () => {
@@ -56,6 +60,13 @@ const Index = () => {
             >
               <Edit size={16} />
               Make Your Own Questions
+            </Button>
+            <Button 
+              className="bg-yellow-500 hover:bg-yellow-600 text-white w-full sm:w-auto flex items-center gap-2"
+              onClick={handleBrowseQuizzes}
+            >
+              <Search size={16} />
+              Browse User Quizzes
             </Button>
             <Button 
               variant="outline"

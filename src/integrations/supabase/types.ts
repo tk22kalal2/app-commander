@@ -172,6 +172,38 @@ export type Database = {
           },
         ]
       }
+      quiz_ratings: {
+        Row: {
+          created_at: string
+          id: string
+          quiz_id: string
+          rating: number
+          user_id: string | null
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          quiz_id: string
+          rating: number
+          user_id?: string | null
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          quiz_id?: string
+          rating?: number
+          user_id?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "quiz_ratings_quiz_id_fkey"
+            columns: ["quiz_id"]
+            isOneToOne: false
+            referencedRelation: "custom_quizzes"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       quiz_results: {
         Row: {
           created_at: string
@@ -218,7 +250,12 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
-      [_ in never]: never
+      get_quiz_avg_rating: {
+        Args: {
+          quiz_uuid: string
+        }
+        Returns: number
+      }
     }
     Enums: {
       [_ in never]: never
