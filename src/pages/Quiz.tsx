@@ -1,54 +1,65 @@
 
-import { useEffect } from "react";
-import { useLocation, Navigate } from "react-router-dom";
+import { useState, useEffect } from "react";
+import { useParams, useNavigate } from "react-router-dom";
+import { Navbar } from "@/components/Navbar";
+import { Footer } from "@/components/Footer";
 import { Quiz as QuizComponent } from "@/components/Quiz";
-import { UserProfile } from "@/components/UserProfile";
-import { ApiKeyInput } from "@/components/ApiKeyInput";
-import { supabase } from "@/integrations/supabase/client";
-import { useNavigate } from "react-router-dom";
+import { Loader2 } from "lucide-react";
 
 const Quiz = () => {
-  const location = useLocation();
+  const { subject, chapter, topic } = useParams();
   const navigate = useNavigate();
-
-  // Check if the state has been passed from the setup page
-  const { subject, chapter, topic, difficulty, questionCount, timeLimit, simultaneousResults } = location.state || {};
+  const [isLoading, setIsLoading] = useState(true);
+  const [difficulty, setDifficulty] = useState("medium");
+  const [questionCount, setQuestionCount] = useState("10");
+  const [timeLimit, setTimeLimit] = useState("60");
 
   useEffect(() => {
-    // Check if we have all required parameters
-    if (!subject || !chapter || !difficulty || !questionCount || !timeLimit) {
-      navigate("/quiz/setup");
-    }
+    // Load parameters from URL or session storage
+    const searchParams = new URLSearchParams(window.location.search);
+    const difficultyParam = searchParams.get("difficulty");
+    const questionCountParam = searchParams.get("count");
+    const timeLimitParam = searchParams.get("time");
 
-    // Update document title
-    document.title = `${subject} Quiz | MedquizAI`;
-  }, [subject, chapter, difficulty, questionCount, timeLimit, navigate]);
+    if (difficultyParam) setDifficulty(difficultyParam);
+    if (questionCountParam) setQuestionCount(questionCountParam);
+    if (timeLimitParam) setTimeLimit(timeLimitParam);
 
-  // Check if ApiKey exists
-  const apiKey = localStorage.getItem("groq_api_key");
-  if (!apiKey) {
-    return <ApiKeyInput onSave={() => window.location.reload()} />;
-  }
+    setTimeout(() => setIsLoading(false), 500);
+  }, []);
 
-  // If we don't have required parameters, redirect to setup
-  if (!subject || !chapter || !difficulty || !questionCount || !timeLimit) {
-    return <Navigate to="/quiz/setup" replace />;
+  if (isLoading) {
+    return (
+      <div className="min-h-screen flex items-center justify-center">
+        <Loader2 className="h-8 w-8 animate-spin text-medblue" />
+      </div>
+    );
   }
 
   return (
     <div className="min-h-screen bg-medbg dark:bg-gray-900">
-      <div className="fixed top-4 right-4 z-50">
-        <UserProfile />
+      <Navbar />
+      
+      <div className="pt-24 pb-12 px-4 sm:px-6 lg:px-8">
+        <div className="max-w-3xl mx-auto">
+          <h1 className="text-3xl font-bold text-medblue mb-6">
+            {subject || "Medical"} Quiz
+          </h1>
+          
+          <QuizComponent
+            subject={subject || "General Medicine"}
+            chapter={chapter || "All Topics"}
+            topic={topic || ""}
+            difficulty={difficulty}
+            questionCount={questionCount}
+            timeLimit={timeLimit}
+            simultaneousResults={true}
+            quizId="generated-quiz"
+          />
+        </div>
       </div>
-      <QuizComponent 
-        subject={subject}
-        chapter={chapter}
-        topic={topic || ""}
-        difficulty={difficulty}
-        questionCount={questionCount}
-        timeLimit={timeLimit}
-        simultaneousResults={simultaneousResults !== undefined ? simultaneousResults : true}
-      />
+      
+      <Footer />
     </div>
   );
 };

@@ -1,3 +1,4 @@
+
 import { useState, useEffect } from "react";
 import { Navbar } from "@/components/Navbar";
 import { Footer } from "@/components/Footer";
@@ -130,7 +131,8 @@ const TakeQuiz = () => {
               difficulty="Medium"
               questionCount={quiz.question_count.toString()}
               timeLimit={quiz.time_per_question || "No Limit"}
-              quizId={quiz.id}  // Add this line to pass the quiz ID
+              quizId={quiz.id}
+              simultaneousResults={true}
             />
           )}
         </div>
