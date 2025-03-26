@@ -65,12 +65,23 @@ export const Quiz = ({
   const [loadedQuestionsCount, setLoadedQuestionsCount] = useState(0);
 
   useEffect(() => {
+    console.log("Quiz component mounted with props:", { 
+      subject, chapter, topic, difficulty, questionCount, timeLimit, quizId 
+    });
+    
     const loadInitialQuestions = async () => {
       setIsLoadingQuestion(true);
+      console.log("Loading initial questions, count:", questionCount);
       
       if (questionCount !== "No Limit") {
         const count = parseInt(questionCount);
         const loadedQuestions: Question[] = [];
+        
+        if (quizId && quizId !== "generated-quiz") {
+          console.log("This is a shared quiz, not generating questions");
+          setIsLoadingQuestion(false);
+          return; // The questions are already loaded in the parent component
+        }
         
         for (let i = 0; i < count; i++) {
           try {
