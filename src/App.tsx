@@ -1,3 +1,4 @@
+
 import {
   createBrowserRouter,
   RouterProvider,
@@ -9,6 +10,7 @@ import ApiKeyInput from "@/pages/ApiKeyInput";
 import QuizSetup from "@/pages/QuizSetup";
 import TakeQuiz from "@/pages/TakeQuiz";
 import CreateQuiz from "@/pages/CreateQuiz";
+import EditQuiz from "@/pages/EditQuiz";
 import Blog from "@/pages/Blog";
 import BlogPost from "@/pages/BlogPost";
 import BrowseQuizzes from "@/pages/BrowseQuizzes";
@@ -42,6 +44,10 @@ const router = createBrowserRouter([
   {
     path: "/quiz/create",
     element: <CreateQuiz />,
+  },
+  {
+    path: "/quiz/edit/:id",
+    element: <EditQuiz />,
   },
   {
     path: "/blog",
