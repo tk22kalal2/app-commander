@@ -144,7 +144,8 @@ const QuizResults = () => {
             }
           });
           
-          setQuestions(Array.from(uniqueQuestionsMap.values()));
+          const uniqueQuestions = Array.from(uniqueQuestionsMap.values());
+          setQuestions(uniqueQuestions);
         }
       } catch (error: any) {
         console.error("Error fetching result:", error);

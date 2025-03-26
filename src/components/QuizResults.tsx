@@ -1,4 +1,3 @@
-
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Trophy, BookOpenText, MessageCircleQuestion } from "lucide-react";
@@ -78,6 +77,17 @@ export const QuizResults = ({
     
     fetchUserName();
   }, []);
+
+  useEffect(() => {
+    const uniqueQuestionsMap = new Map();
+    questions.forEach(q => {
+      if (!uniqueQuestionsMap.has(q.question)) {
+        uniqueQuestionsMap.set(q.question, q);
+      }
+    });
+    const uniqueQuestions = Array.from(uniqueQuestionsMap.values());
+    setQuestions(uniqueQuestions);
+  }, [questions]);
 
   const handleAskDoubt = async (questionIndex: number) => {
     if (!doubt.trim()) {
@@ -161,8 +171,7 @@ export const QuizResults = ({
               <h3 className="font-semibold text-lg mb-4">Review Questions</h3>
               
               <div className="flex flex-wrap gap-2 mb-6 justify-center">
-                {/* Use Array.from(new Set()) to ensure unique question indices */}
-                {Array.from(new Set(questions.map((_, index) => index))).map((index) => (
+                {questions.map((_, index) => (
                   <button
                     key={index}
                     className={`h-10 w-10 rounded-full flex items-center justify-center text-sm ${
