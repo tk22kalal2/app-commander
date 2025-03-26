@@ -109,7 +109,22 @@ const TakeQuiz = () => {
         
         const uniqueQuestions = Array.from(uniqueQuestionsMap.values());
         console.log(`Unique questions: ${uniqueQuestions.length}`);
-        setQuestions(uniqueQuestions);
+        
+        // Convert the format of questions to match what the Quiz component expects
+        const formattedQuestions = uniqueQuestions.map(q => ({
+          question: q.question_text,
+          options: [
+            `A. ${q.option_a}`,
+            `B. ${q.option_b}`,
+            `C. ${q.option_c}`,
+            `D. ${q.option_d}`
+          ],
+          correctAnswer: q.correct_answer,
+          explanation: q.explanation || "No explanation provided.",
+          subject: quiz?.title || "Custom Quiz"
+        }));
+        
+        setQuestions(formattedQuestions);
       } catch (error: any) {
         console.error("Error in fetchQuizData:", error);
         setError(error.message || "Failed to load quiz");
@@ -161,6 +176,7 @@ const TakeQuiz = () => {
               timeLimit={quiz.time_per_question || "No Limit"}
               quizId={quiz.id}
               simultaneousResults={true}
+              preloadedQuestions={questions}
             />
           ) : (
             <div className="bg-white p-6 rounded-lg shadow-md text-center">

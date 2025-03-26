@@ -1,3 +1,4 @@
+
 import { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { generateQuestion, handleDoubt } from "@/services/groqService";
@@ -20,6 +21,13 @@ interface QuizProps {
   timeLimit: string;
   simultaneousResults: boolean;
   quizId: string;
+  preloadedQuestions?: {
+    question: string;
+    options: string[];
+    correctAnswer: string;
+    explanation: string;
+    subject: string;
+  }[];
 }
 
 interface Question {
@@ -43,11 +51,12 @@ export const Quiz = ({
   questionCount, 
   timeLimit,
   simultaneousResults = true,
-  quizId
+  quizId,
+  preloadedQuestions = []
 }: QuizProps) => {
-  const [questions, setQuestions] = useState<Question[]>([]);
+  const [questions, setQuestions] = useState<Question[]>(preloadedQuestions);
   const [currentQuestionIndex, setCurrentQuestionIndex] = useState(0);
-  const [currentQuestion, setCurrentQuestion] = useState<Question | null>(null);
+  const [currentQuestion, setCurrentQuestion] = useState<Question | null>(preloadedQuestions[0] || null);
   const [selectedAnswer, setSelectedAnswer] = useState<string | null>(null);
   const [showExplanation, setShowExplanation] = useState(false);
   const [score, setScore] = useState(0);
@@ -59,17 +68,28 @@ export const Quiz = ({
   const [doubt, setDoubt] = useState("");
   const [doubtMessages, setDoubtMessages] = useState<DoubtMessage[]>([]);
   const [isLoadingAnswer, setIsLoadingAnswer] = useState(false);
-  const [isLoadingQuestion, setIsLoadingQuestion] = useState(true);
+  const [isLoadingQuestion, setIsLoadingQuestion] = useState(preloadedQuestions.length === 0);
   const [answers, setAnswers] = useState<Record<number, string>>({});
   const [adCounter, setAdCounter] = useState(0);
-  const [loadedQuestionsCount, setLoadedQuestionsCount] = useState(0);
+  const [loadedQuestionsCount, setLoadedQuestionsCount] = useState(preloadedQuestions.length);
 
   useEffect(() => {
     console.log("Quiz component mounted with props:", { 
-      subject, chapter, topic, difficulty, questionCount, timeLimit, quizId 
+      subject, chapter, topic, difficulty, questionCount, timeLimit, quizId, 
+      preloadedQuestionsLength: preloadedQuestions.length 
     });
     
     const loadInitialQuestions = async () => {
+      // If we already have preloaded questions, don't try to generate new ones
+      if (preloadedQuestions.length > 0) {
+        console.log("Using preloaded questions:", preloadedQuestions.length);
+        setQuestions(preloadedQuestions);
+        setCurrentQuestion(preloadedQuestions[0]);
+        setLoadedQuestionsCount(preloadedQuestions.length);
+        setIsLoadingQuestion(false);
+        return;
+      }
+      
       setIsLoadingQuestion(true);
       console.log("Loading initial questions, count:", questionCount);
       
@@ -78,9 +98,9 @@ export const Quiz = ({
         const loadedQuestions: Question[] = [];
         
         if (quizId && quizId !== "generated-quiz") {
-          console.log("This is a shared quiz, not generating questions");
+          console.log("This is a shared quiz, but no preloaded questions were provided");
           setIsLoadingQuestion(false);
-          return; // The questions are already loaded in the parent component
+          return;
         }
         
         for (let i = 0; i < count; i++) {
