@@ -87,7 +87,12 @@ const TakeQuiz = () => {
         }
         
         console.log("Quiz data fetched:", quizData);
-        const quizWithCreator = { ...quizData, creator_name: undefined };
+        // Set a default value for is_private if it doesn't exist
+        const quizWithCreator = { 
+          ...quizData, 
+          creator_name: undefined,
+          is_private: quizData.is_private !== undefined ? quizData.is_private : (quizData.access_code ? true : false)
+        };
         
         const { data: creatorData } = await supabase
           .from('profiles')
