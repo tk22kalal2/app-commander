@@ -73,8 +73,7 @@ const CreateQuiz = () => {
         description,
         question_count: questionCount,
         time_per_question: timePerQuestion,
-        access_code: accessCode,
-        is_private: isPrivate === "private"
+        access_code: accessCode
       });
       
       // Create the quiz
@@ -86,8 +85,7 @@ const CreateQuiz = () => {
           description,
           question_count: questionCount,
           time_per_question: timePerQuestion,
-          access_code: accessCode,
-          is_private: isPrivate === "private"
+          access_code: accessCode
         })
         .select()
         .single();
@@ -109,7 +107,7 @@ const CreateQuiz = () => {
       setTimeout(() => {
         console.log("Executing navigation to:", `/quiz/edit/${quiz.id}`);
         navigate(`/quiz/edit/${quiz.id}`);
-      }, 1000);
+      }, 1500);
     } catch (error: any) {
       console.error("Error creating quiz:", error);
       toast.error("Failed to create quiz: " + error.message);
