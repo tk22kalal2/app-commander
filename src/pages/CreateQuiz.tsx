@@ -1,3 +1,4 @@
+
 import { useState, useEffect } from "react";
 import { Navbar } from "@/components/Navbar";
 import { Footer } from "@/components/Footer";
@@ -91,15 +92,24 @@ const CreateQuiz = () => {
         .select()
         .single();
       
-      if (error) throw error;
+      if (error) {
+        console.error("Supabase error:", error);
+        throw error;
+      }
+      
+      if (!quiz) {
+        throw new Error("Failed to create quiz - no data returned");
+      }
       
       console.log("Quiz created successfully:", quiz);
+      console.log("Navigating to edit page with ID:", quiz.id);
       toast.success("Quiz created successfully!");
       
-      // Add a delay to ensure the toast is shown before navigation
+      // Use a simple timeout to ensure the navigation happens after the state updates
       setTimeout(() => {
+        console.log("Executing navigation to:", `/quiz/edit/${quiz.id}`);
         navigate(`/quiz/edit/${quiz.id}`);
-      }, 500);
+      }, 1000);
     } catch (error: any) {
       console.error("Error creating quiz:", error);
       toast.error("Failed to create quiz: " + error.message);
