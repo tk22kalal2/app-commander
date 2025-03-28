@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from "react";
 import { Navbar } from "@/components/Navbar";
 import { Footer } from "@/components/Footer";
@@ -91,7 +90,7 @@ const TakeQuiz = () => {
         const quizWithCreator = { 
           ...quizData, 
           creator_name: undefined,
-          is_private: quizData.is_private !== undefined ? quizData.is_private : (quizData.access_code ? true : false)
+          is_private: quizData.access_code ? true : false
         };
         
         const { data: creatorData } = await supabase
