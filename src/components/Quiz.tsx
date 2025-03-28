@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { generateQuestion, handleDoubt } from "@/services/groqService";
@@ -12,6 +11,14 @@ import { InArticleAd } from "./ads/InArticleAd";
 import { MultiplexHorizontalAd } from "./ads/MultiplexHorizontalAd";
 import { Check, X, BookOpenText, MessageCircleQuestion, ArrowRight } from "lucide-react";
 
+interface FormattedQuestion {
+  question: string;
+  options: string[];
+  correctAnswer: string;
+  explanation: string;
+  subject: string;
+}
+
 interface QuizProps {
   subject: string;
   chapter: string;
@@ -21,13 +28,7 @@ interface QuizProps {
   timeLimit: string;
   simultaneousResults: boolean;
   quizId: string;
-  preloadedQuestions?: {
-    question: string;
-    options: string[];
-    correctAnswer: string;
-    explanation: string;
-    subject: string;
-  }[];
+  preloadedQuestions?: FormattedQuestion[];
 }
 
 interface Question {
@@ -80,7 +81,6 @@ export const Quiz = ({
     });
     
     const loadInitialQuestions = async () => {
-      // If we already have preloaded questions, don't try to generate new ones
       if (preloadedQuestions.length > 0) {
         console.log("Using preloaded questions:", preloadedQuestions.length);
         setQuestions(preloadedQuestions);

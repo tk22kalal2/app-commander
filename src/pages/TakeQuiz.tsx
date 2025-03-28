@@ -21,7 +21,8 @@ interface CustomQuiz {
   creator_name?: string;
 }
 
-interface Question {
+// This interface represents the database structure of quiz questions
+interface DbQuestion {
   id: string;
   question_text: string;
   image_url?: string | null;
@@ -33,10 +34,20 @@ interface Question {
   explanation?: string | null;
 }
 
+// This interface matches what the Quiz component expects
+interface FormattedQuestion {
+  question: string;
+  options: string[];
+  correctAnswer: string;
+  explanation: string;
+  subject: string;
+}
+
 const TakeQuiz = () => {
   const { id } = useParams<{ id: string }>();
   const [quiz, setQuiz] = useState<CustomQuiz | null>(null);
-  const [questions, setQuestions] = useState<Question[]>([]);
+  const [questions, setQuestions] = useState<DbQuestion[]>([]);
+  const [formattedQuestions, setFormattedQuestions] = useState<FormattedQuestion[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
@@ -107,11 +118,14 @@ const TakeQuiz = () => {
           }
         });
         
-        const uniqueQuestions = Array.from(uniqueQuestionsMap.values());
+        const uniqueQuestions = Array.from(uniqueQuestionsMap.values()) as DbQuestion[];
         console.log(`Unique questions: ${uniqueQuestions.length}`);
         
+        // Store the original database questions
+        setQuestions(uniqueQuestions);
+        
         // Convert the format of questions to match what the Quiz component expects
-        const formattedQuestions = uniqueQuestions.map(q => ({
+        const formatted = uniqueQuestions.map(q => ({
           question: q.question_text,
           options: [
             `A. ${q.option_a}`,
@@ -121,10 +135,11 @@ const TakeQuiz = () => {
           ],
           correctAnswer: q.correct_answer,
           explanation: q.explanation || "No explanation provided.",
-          subject: quiz?.title || "Custom Quiz"
+          subject: quizWithCreator.title || "Custom Quiz"
         }));
         
-        setQuestions(formattedQuestions);
+        setFormattedQuestions(formatted);
+        console.log("Formatted questions for Quiz component:", formatted.length);
       } catch (error: any) {
         console.error("Error in fetchQuizData:", error);
         setError(error.message || "Failed to load quiz");
@@ -166,7 +181,7 @@ const TakeQuiz = () => {
             <p className="text-gray-600 dark:text-gray-300 mb-4">{quiz.description}</p>
           )}
           
-          {questions.length > 0 ? (
+          {formattedQuestions.length > 0 ? (
             <Quiz
               subject={quiz.title}
               chapter={quiz.title}
@@ -176,7 +191,7 @@ const TakeQuiz = () => {
               timeLimit={quiz.time_per_question || "No Limit"}
               quizId={quiz.id}
               simultaneousResults={true}
-              preloadedQuestions={questions}
+              preloadedQuestions={formattedQuestions}
             />
           ) : (
             <div className="bg-white p-6 rounded-lg shadow-md text-center">
