@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from "react";
 import { Navbar } from "@/components/Navbar";
 import { Footer } from "@/components/Footer";
@@ -67,6 +66,16 @@ const CreateQuiz = () => {
       // Generate a unique access code only if the quiz is private
       const accessCode = isPrivate === "private" ? generateRandomCode(6) : null;
       
+      console.log("Creating quiz with the following data:", {
+        creator_id: user.id,
+        title,
+        description,
+        question_count: questionCount,
+        time_per_question: timePerQuestion,
+        access_code: accessCode,
+        is_private: isPrivate === "private"
+      });
+      
       // Create the quiz
       const { data: quiz, error } = await supabase
         .from('custom_quizzes')
@@ -84,8 +93,13 @@ const CreateQuiz = () => {
       
       if (error) throw error;
       
+      console.log("Quiz created successfully:", quiz);
       toast.success("Quiz created successfully!");
-      navigate(`/quiz/edit/${quiz.id}`);
+      
+      // Add a delay to ensure the toast is shown before navigation
+      setTimeout(() => {
+        navigate(`/quiz/edit/${quiz.id}`);
+      }, 500);
     } catch (error: any) {
       console.error("Error creating quiz:", error);
       toast.error("Failed to create quiz: " + error.message);
