@@ -13,6 +13,7 @@ import { useNavigate } from "react-router-dom";
 import { toast } from "sonner";
 import { supabase } from "@/integrations/supabase/client";
 import { generateRandomCode } from "@/lib/utils";
+import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 
 const CreateQuiz = () => {
   const [isAuthenticated, setIsAuthenticated] = useState<boolean | null>(null);
@@ -20,6 +21,7 @@ const CreateQuiz = () => {
   const [description, setDescription] = useState("");
   const [questionCount, setQuestionCount] = useState<number>(0);
   const [timePerQuestion, setTimePerQuestion] = useState("60");
+  const [isPrivate, setIsPrivate] = useState("private");
   const [isLoading, setIsLoading] = useState(false);
   const navigate = useNavigate();
 
@@ -62,8 +64,8 @@ const CreateQuiz = () => {
         return;
       }
       
-      // Generate a unique access code
-      const accessCode = generateRandomCode(6);
+      // Generate a unique access code only if the quiz is private
+      const accessCode = isPrivate === "private" ? generateRandomCode(6) : null;
       
       // Create the quiz
       const { data: quiz, error } = await supabase
@@ -74,7 +76,8 @@ const CreateQuiz = () => {
           description,
           question_count: questionCount,
           time_per_question: timePerQuestion,
-          access_code: accessCode
+          access_code: accessCode,
+          is_private: isPrivate === "private"
         })
         .select()
         .single();
@@ -163,6 +166,25 @@ const CreateQuiz = () => {
                   </SelectContent>
                 </Select>
               </div>
+            </div>
+            
+            <div className="space-y-2">
+              <Label>Quiz Visibility</Label>
+              <RadioGroup defaultValue="private" value={isPrivate} onValueChange={setIsPrivate} className="flex flex-col space-y-1">
+                <div className="flex items-center space-x-2">
+                  <RadioGroupItem value="private" id="private" />
+                  <Label htmlFor="private">Private (requires access code to take)</Label>
+                </div>
+                <div className="flex items-center space-x-2">
+                  <RadioGroupItem value="public" id="public" />
+                  <Label htmlFor="public">Public (anyone can take)</Label>
+                </div>
+              </RadioGroup>
+              {isPrivate === "private" && (
+                <p className="text-sm text-gray-500 mt-1">
+                  An access code will be generated automatically when you create the quiz.
+                </p>
+              )}
             </div>
             
             <Separator />
