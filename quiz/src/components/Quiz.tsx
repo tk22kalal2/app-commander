@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { generateQuestion } from "@/services/groqService";
@@ -7,6 +6,8 @@ import { QuizResults } from "./QuizResults";
 import { NativeAd } from "./ads/NativeAd";
 import { InArticleAd } from "./ads/InArticleAd";
 import { QuizAd } from "./ads/QuizAd";
+import { useNavigate } from "react-router-dom";
+import { supabase } from "@/integrations/supabase/client";
 
 interface QuizProps {
   subject: string;
@@ -15,6 +16,7 @@ interface QuizProps {
   difficulty: string;
   questionCount: string;
   timeLimit: string;
+  quizId?: string;
 }
 
 interface Question {
@@ -25,7 +27,7 @@ interface Question {
   subject: string;
 }
 
-export const Quiz = ({ subject, chapter, topic, difficulty, questionCount, timeLimit }: QuizProps) => {
+export const Quiz = ({ subject, chapter, topic, difficulty, questionCount, timeLimit, quizId }: QuizProps) => {
   const [currentQuestion, setCurrentQuestion] = useState<Question | null>(null);
   const [selectedAnswer, setSelectedAnswer] = useState<string | null>(null);
   const [showExplanation, setShowExplanation] = useState(false);
@@ -35,6 +37,7 @@ export const Quiz = ({ subject, chapter, topic, difficulty, questionCount, timeL
     timeLimit !== "No Limit" ? parseInt(timeLimit) : null
   );
   const [isQuizComplete, setIsQuizComplete] = useState(false);
+  const navigate = useNavigate();
 
   useEffect(() => {
     loadQuestion();
@@ -95,9 +98,46 @@ export const Quiz = ({ subject, chapter, topic, difficulty, questionCount, timeL
     }
   };
 
-  const handleNext = () => {
+  const handleNext = async () => {
     if (questionCount !== "No Limit" && questionNumber >= parseInt(questionCount)) {
       setIsQuizComplete(true);
+      
+      try {
+        // Save quiz result to database if user is logged in
+        const { data: { user } } = await supabase.auth.getUser();
+        
+        if (user) {
+          const { data: userData } = await supabase
+            .from('profiles')
+            .select('name')
+            .eq('id', user.id)
+            .single();
+            
+          const userName = userData?.name || 'User';
+          
+          const { data: resultData, error } = await supabase
+            .from('quiz_results')
+            .insert({
+              quiz_id: quizId || 'ai-generated',
+              user_id: user.id,
+              user_name: userName,
+              score: score,
+              total_questions: parseInt(questionCount),
+              time_taken: null
+            })
+            .select('id')
+            .single();
+            
+          if (resultData && resultData.id) {
+            // Navigate to results page
+            navigate(`/quiz/results/${resultData.id}`);
+            return;
+          }
+        }
+      } catch (error) {
+        console.error("Error saving quiz result:", error);
+      }
+      
       return;
     }
     setQuestionNumber(prev => prev + 1);
@@ -125,6 +165,7 @@ export const Quiz = ({ subject, chapter, topic, difficulty, questionCount, timeL
         <QuizResults 
           score={score} 
           totalQuestions={parseInt(questionCount)} 
+          onRestartQuiz={handleRestartQuiz}
           subject={subject}
           chapter={chapter}
           topic={topic}
