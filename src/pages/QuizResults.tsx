@@ -19,6 +19,7 @@ interface QuizResult {
   total_questions: number;
   time_taken: number | null;
   created_at: string;
+  college_name?: string;
 }
 
 interface CustomQuiz {
@@ -52,6 +53,7 @@ interface Ranking {
   total_questions: number;
   percentage: number;
   created_at: string;
+  college_name?: string;
 }
 
 interface DoubtMessage {
@@ -113,7 +115,7 @@ const QuizResults = () => {
         
         const { data: allResults, error: rankingsError } = await supabase
           .from('quiz_results')
-          .select('*')
+          .select('*, profiles:user_id(college_name)')
           .eq('quiz_id', resultData.quiz_id)
           .order('score', { ascending: false });
         
@@ -124,7 +126,8 @@ const QuizResults = () => {
           score: r.score,
           total_questions: r.total_questions,
           percentage: Math.round((r.score / r.total_questions) * 100),
-          created_at: r.created_at
+          created_at: r.created_at,
+          college_name: r.profiles?.college_name || 'Not specified'
         }));
         
         setRankings(formattedRankings);
@@ -505,6 +508,7 @@ const QuizResults = () => {
                     <tr className="bg-gray-100 dark:bg-gray-800">
                       <th className="px-4 py-2 text-left">Rank</th>
                       <th className="px-4 py-2 text-left">Name</th>
+                      <th className="px-4 py-2 text-left">College</th>
                       <th className="px-4 py-2 text-right">Score</th>
                       <th className="px-4 py-2 text-right">Percentage</th>
                       <th className="px-4 py-2 text-right">Date</th>
@@ -520,6 +524,7 @@ const QuizResults = () => {
                           {index === 0 ? '🥇' : index === 1 ? '🥈' : index === 2 ? '🥉' : `${index + 1}`}
                         </td>
                         <td className="px-4 py-2 font-medium">{ranking.user_name}</td>
+                        <td className="px-4 py-2">{ranking.college_name || 'Not specified'}</td>
                         <td className="px-4 py-2 text-right">{ranking.score}/{ranking.total_questions}</td>
                         <td className="px-4 py-2 text-right">{ranking.percentage}%</td>
                         <td className="px-4 py-2 text-right text-sm text-gray-500">

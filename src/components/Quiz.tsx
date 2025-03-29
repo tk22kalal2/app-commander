@@ -29,6 +29,7 @@ interface QuizProps {
   simultaneousResults: boolean;
   quizId: string;
   preloadedQuestions?: FormattedQuestion[];
+  onScoreUpdate?: (score: number) => void;
 }
 
 interface Question {
@@ -53,7 +54,8 @@ export const Quiz = ({
   timeLimit,
   simultaneousResults = true,
   quizId,
-  preloadedQuestions = []
+  preloadedQuestions = [],
+  onScoreUpdate
 }: QuizProps) => {
   const [questions, setQuestions] = useState<Question[]>(preloadedQuestions);
   const [currentQuestionIndex, setCurrentQuestionIndex] = useState(0);
@@ -243,6 +245,12 @@ export const Quiz = ({
     setCurrentQuestionIndex(index);
     setQuestionNumber(index + 1);
   };
+
+  useEffect(() => {
+    if (isQuizComplete && onScoreUpdate) {
+      onScoreUpdate(score);
+    }
+  }, [isQuizComplete, score, onScoreUpdate]);
 
   const handleSubmitQuiz = () => {
     if (!simultaneousResults) {
