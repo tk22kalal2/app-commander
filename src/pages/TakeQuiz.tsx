@@ -10,6 +10,7 @@ import { AccessCodeForm } from "@/components/quiz/AccessCodeForm";
 import { QuizDisplay } from "@/components/quiz/QuizDisplay";
 import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
+import { toast } from "sonner";
 
 const TakeQuiz = () => {
   const { id } = useParams<{ id: string }>();

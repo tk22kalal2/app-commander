@@ -120,6 +120,42 @@ export const QuizResults = ({
             {percentage}% Correct
           </div>
           
+          {questions.length > 0 && (
+            <div className="mt-4">
+              <h3 className="text-xl font-semibold mb-4 text-left">Question Analysis</h3>
+              <div className="space-y-4">
+                {questions.map((question, idx) => {
+                  const userAnswer = answers[idx] || "";
+                  const isCorrect = userAnswer === question.correctAnswer;
+                  
+                  return (
+                    <div key={idx} className={`p-4 border rounded-lg ${isCorrect ? 'bg-green-50' : 'bg-red-50'}`}>
+                      <p className="font-medium">{question.question}</p>
+                      <div className="mt-2">
+                        <span className="font-medium">Your answer: </span>
+                        {userAnswer ? (
+                          <span className={isCorrect ? 'text-green-600' : 'text-red-600'}>
+                            {userAnswer}. {question.options.find(opt => opt[0] === userAnswer)?.substring(3)}
+                          </span>
+                        ) : (
+                          <span className="text-gray-500">Not answered</span>
+                        )}
+                      </div>
+                      {!isCorrect && (
+                        <div className="mt-1">
+                          <span className="font-medium">Correct answer: </span>
+                          <span className="text-green-600">
+                            {question.correctAnswer}. {question.options.find(opt => opt[0] === question.correctAnswer)?.substring(3)}
+                          </span>
+                        </div>
+                      )}
+                    </div>
+                  );
+                })}
+              </div>
+            </div>
+          )}
+          
           {rankings.length > 0 && (
             <div className="mt-8">
               <h3 className="text-xl font-semibold mb-4">Leaderboard</h3>

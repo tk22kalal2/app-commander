@@ -109,40 +109,42 @@ export const Quiz = ({ subject, chapter, topic, difficulty, questionCount, timeL
     if (questionCount !== "No Limit" && questionNumber >= parseInt(questionCount)) {
       setIsQuizComplete(true);
       
-      try {
-        // Save quiz result to database if user is logged in
-        const { data: { user } } = await supabase.auth.getUser();
-        
-        if (user) {
-          const { data: userData } = await supabase
-            .from('profiles')
-            .select('name')
-            .eq('id', user.id)
-            .single();
-            
-          const userName = userData?.name || 'User';
+      if (!simultaneousResults) {
+        try {
+          // Save quiz result to database if user is logged in
+          const { data: { user } } = await supabase.auth.getUser();
           
-          const { data: resultData, error } = await supabase
-            .from('quiz_results')
-            .insert({
-              quiz_id: quizId || 'ai-generated',
-              user_id: user.id,
-              user_name: userName,
-              score: score,
-              total_questions: parseInt(questionCount),
-              time_taken: null
-            })
-            .select('id')
-            .single();
+          if (user) {
+            const { data: userData } = await supabase
+              .from('profiles')
+              .select('name')
+              .eq('id', user.id)
+              .single();
+              
+            const userName = userData?.name || 'User';
             
-          if (resultData && resultData.id) {
-            // Navigate to results page
-            navigate(`/quiz/results/${resultData.id}`);
-            return;
+            const { data: resultData, error } = await supabase
+              .from('quiz_results')
+              .insert({
+                quiz_id: quizId || 'ai-generated',
+                user_id: user.id,
+                user_name: userName,
+                score: score,
+                total_questions: parseInt(questionCount),
+                time_taken: timeLimit !== "No Limit" ? parseInt(timeLimit) - (timeRemaining || 0) : null
+              })
+              .select('id')
+              .single();
+              
+            if (resultData && resultData.id) {
+              // Navigate to results page
+              navigate(`/quiz/results/${resultData.id}`);
+              return;
+            }
           }
+        } catch (error) {
+          console.error("Error saving quiz result:", error);
         }
-      } catch (error) {
-        console.error("Error saving quiz result:", error);
       }
       
       return;
@@ -156,6 +158,8 @@ export const Quiz = ({ subject, chapter, topic, difficulty, questionCount, timeL
     setQuestionNumber(1);
     setIsQuizComplete(false);
     setTimeRemaining(timeLimit !== "No Limit" ? parseInt(timeLimit) : null);
+    setQuestions([]);
+    setAnswers({});
     loadQuestion();
   };
 
