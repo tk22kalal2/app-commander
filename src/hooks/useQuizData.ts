@@ -74,7 +74,8 @@ export const useQuizData = (quizId: string, isAccessVerified: boolean) => {
         }
         
         console.log("Quiz data fetched:", quizData);
-        // Set a default value for is_private if it doesn't exist
+        
+        // Determine if the quiz is private based on the presence of an access_code
         const isPrivate = !!quizData.access_code;
         
         const quizWithCreator = { 
