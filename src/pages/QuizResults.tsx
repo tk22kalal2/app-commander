@@ -115,20 +115,45 @@ const QuizResults = () => {
         
         const { data: allResults, error: rankingsError } = await supabase
           .from('quiz_results')
-          .select('*, profiles:user_id(college_name)')
+          .select('*')
           .eq('quiz_id', resultData.quiz_id)
           .order('score', { ascending: false });
         
         if (rankingsError) throw rankingsError;
         
-        const formattedRankings = allResults.map(r => ({
+        const formattedRankings: Ranking[] = allResults.map(r => ({
           user_name: r.user_name,
           score: r.score,
           total_questions: r.total_questions,
           percentage: Math.round((r.score / r.total_questions) * 100),
           created_at: r.created_at,
-          college_name: r.profiles?.college_name || 'Not specified'
+          college_name: 'Not specified'
         }));
+        
+        const userIds = allResults
+          .filter(r => r.user_id)
+          .map(r => r.user_id);
+        
+        if (userIds.length > 0) {
+          const { data: profiles, error: profilesError } = await supabase
+            .from('profiles')
+            .select('id, college_name')
+            .in('id', userIds);
+          
+          if (!profilesError && profiles) {
+            const profileMap = new Map();
+            profiles.forEach(profile => {
+              profileMap.set(profile.id, profile.college_name);
+            });
+            
+            formattedRankings.forEach((ranking, index) => {
+              const resultItem = allResults[index];
+              if (resultItem.user_id && profileMap.has(resultItem.user_id)) {
+                ranking.college_name = profileMap.get(resultItem.user_id);
+              }
+            });
+          }
+        }
         
         setRankings(formattedRankings);
         
