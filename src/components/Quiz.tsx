@@ -1,23 +1,14 @@
+
 import { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
-import { generateQuestion, handleDoubt } from "@/services/groqService";
+import { generateQuestion } from "@/services/groqService";
 import { toast } from "sonner";
 import { QuizResults } from "./QuizResults";
-import { Textarea } from "./ui/textarea";
-import { Card } from "./ui/card";
-import { HorizontalAd } from "./ads/HorizontalAd";
-import { SquareAd } from "./ads/SquareAd";
+import { NativeAd } from "./ads/NativeAd";
 import { InArticleAd } from "./ads/InArticleAd";
-import { MultiplexHorizontalAd } from "./ads/MultiplexHorizontalAd";
-import { Check, X, BookOpenText, MessageCircleQuestion, ArrowRight } from "lucide-react";
-
-interface FormattedQuestion {
-  question: string;
-  options: string[];
-  correctAnswer: string;
-  explanation: string;
-  subject: string;
-}
+import { QuizAd } from "./ads/QuizAd";
+import { useNavigate } from "react-router-dom";
+import { supabase } from "@/integrations/supabase/client";
 
 interface QuizProps {
   subject: string;
@@ -26,10 +17,7 @@ interface QuizProps {
   difficulty: string;
   questionCount: string;
   timeLimit: string;
-  simultaneousResults: boolean;
-  quizId: string;
-  preloadedQuestions?: FormattedQuestion[];
-  onScoreUpdate?: (score: number) => void;
+  quizId?: string;
 }
 
 interface Question {
@@ -40,26 +28,8 @@ interface Question {
   subject: string;
 }
 
-interface DoubtMessage {
-  type: 'doubt' | 'answer';
-  content: string;
-}
-
-export const Quiz = ({ 
-  subject, 
-  chapter, 
-  topic, 
-  difficulty, 
-  questionCount, 
-  timeLimit,
-  simultaneousResults = true,
-  quizId,
-  preloadedQuestions = [],
-  onScoreUpdate
-}: QuizProps) => {
-  const [questions, setQuestions] = useState<Question[]>(preloadedQuestions);
-  const [currentQuestionIndex, setCurrentQuestionIndex] = useState(0);
-  const [currentQuestion, setCurrentQuestion] = useState<Question | null>(preloadedQuestions[0] || null);
+export const Quiz = ({ subject, chapter, topic, difficulty, questionCount, timeLimit, quizId }: QuizProps) => {
+  const [currentQuestion, setCurrentQuestion] = useState<Question | null>(null);
   const [selectedAnswer, setSelectedAnswer] = useState<string | null>(null);
   const [showExplanation, setShowExplanation] = useState(false);
   const [score, setScore] = useState(0);
@@ -68,72 +38,12 @@ export const Quiz = ({
     timeLimit !== "No Limit" ? parseInt(timeLimit) : null
   );
   const [isQuizComplete, setIsQuizComplete] = useState(false);
-  const [doubt, setDoubt] = useState("");
-  const [doubtMessages, setDoubtMessages] = useState<DoubtMessage[]>([]);
-  const [isLoadingAnswer, setIsLoadingAnswer] = useState(false);
-  const [isLoadingQuestion, setIsLoadingQuestion] = useState(preloadedQuestions.length === 0);
+  const [questions, setQuestions] = useState<Question[]>([]);
   const [answers, setAnswers] = useState<Record<number, string>>({});
-  const [adCounter, setAdCounter] = useState(0);
-  const [loadedQuestionsCount, setLoadedQuestionsCount] = useState(preloadedQuestions.length);
+  const navigate = useNavigate();
 
   useEffect(() => {
-    console.log("Quiz component mounted with props:", { 
-      subject, chapter, topic, difficulty, questionCount, timeLimit, quizId, 
-      preloadedQuestionsLength: preloadedQuestions.length 
-    });
-    
-    const loadInitialQuestions = async () => {
-      if (preloadedQuestions.length > 0) {
-        console.log("Using preloaded questions:", preloadedQuestions.length);
-        setQuestions(preloadedQuestions);
-        setCurrentQuestion(preloadedQuestions[0]);
-        setLoadedQuestionsCount(preloadedQuestions.length);
-        setIsLoadingQuestion(false);
-        return;
-      }
-      
-      setIsLoadingQuestion(true);
-      console.log("Loading initial questions, count:", questionCount);
-      
-      if (questionCount !== "No Limit") {
-        const count = parseInt(questionCount);
-        const loadedQuestions: Question[] = [];
-        
-        if (quizId && quizId !== "generated-quiz") {
-          console.log("This is a shared quiz, but no preloaded questions were provided");
-          setIsLoadingQuestion(false);
-          return;
-        }
-        
-        for (let i = 0; i < count; i++) {
-          try {
-            const question = await generateSingleQuestion();
-            if (question) {
-              loadedQuestions.push(question);
-              setLoadedQuestionsCount(prev => prev + 1);
-            }
-          } catch (error) {
-            console.error("Error loading question:", error);
-          }
-        }
-        
-        if (loadedQuestions.length > 0) {
-          setQuestions(loadedQuestions);
-          setCurrentQuestion(loadedQuestions[0]);
-        }
-      } else {
-        const question = await generateSingleQuestion();
-        if (question) {
-          setQuestions([question]);
-          setCurrentQuestion(question);
-          setLoadedQuestionsCount(1);
-        }
-      }
-      
-      setIsLoadingQuestion(false);
-    };
-    
-    loadInitialQuestions();
+    loadQuestion();
   }, []);
 
   useEffect(() => {
@@ -153,20 +63,6 @@ export const Quiz = ({
     }
   }, [timeRemaining]);
 
-  useEffect(() => {
-    if (questions.length > 0 && currentQuestionIndex < questions.length) {
-      setCurrentQuestion(questions[currentQuestionIndex]);
-      setSelectedAnswer(answers[currentQuestionIndex] || null);
-      setShowExplanation(simultaneousResults && answers[currentQuestionIndex] ? true : false);
-    }
-  }, [currentQuestionIndex, questions, answers, simultaneousResults]);
-
-  const generateSingleQuestion = async () => {
-    const topicString = topic ? `${chapter} - ${topic}` : chapter;
-    const scope = chapter === "Complete Subject" ? subject : `${subject} - ${topicString}`;
-    return await generateQuestion(scope, difficulty);
-  };
-
   const getOptionStyle = (option: string) => {
     if (!selectedAnswer) {
       return "bg-white text-black hover:bg-gray-100 font-normal";
@@ -185,113 +81,81 @@ export const Quiz = ({
     return "bg-white text-black font-normal";
   };
 
-  const loadNewQuestion = async () => {
-    if (questionCount === "No Limit") {
-      setIsLoadingQuestion(true);
-      const newQuestion = await generateSingleQuestion();
-      if (newQuestion) {
-        setQuestions(prev => [...prev, newQuestion]);
-        setCurrentQuestion(newQuestion);
-        setLoadedQuestionsCount(prev => prev + 1);
-      }
-      setIsLoadingQuestion(false);
+  const loadQuestion = async () => {
+    const topicString = topic ? `${chapter} - ${topic}` : chapter;
+    const scope = chapter === "Complete Subject" ? subject : `${subject} - ${topicString}`;
+    const newQuestion = await generateQuestion(scope, difficulty);
+    if (newQuestion) {
+      setCurrentQuestion(newQuestion);
+      setQuestions(prev => [...prev, newQuestion]);
+      setSelectedAnswer(null);
+      setShowExplanation(false);
     }
-    
-    setSelectedAnswer(null);
-    setShowExplanation(false);
-    setDoubt("");
-    setDoubtMessages([]);
   };
 
   const handleAnswerSelect = (answer: string) => {
     if (!selectedAnswer && timeRemaining !== 0) {
       setSelectedAnswer(answer);
-      setAnswers(prev => ({...prev, [currentQuestionIndex]: answer}));
+      setAnswers(prev => ({...prev, [questionNumber-1]: answer}));
       
       if (answer === currentQuestion?.correctAnswer) {
         setScore(prev => prev + 1);
       }
+    }
+  };
+
+  const handleNext = async () => {
+    if (questionCount !== "No Limit" && questionNumber >= parseInt(questionCount)) {
+      setIsQuizComplete(true);
       
-      if (simultaneousResults) {
-        setShowExplanation(true);
-      }
-    }
-  };
-
-  const handleNext = () => {
-    setAdCounter(prev => prev + 1);
-    
-    if (questionCount !== "No Limit" && currentQuestionIndex >= parseInt(questionCount) - 1) {
-      if (!simultaneousResults) {
-        setIsQuizComplete(true);
-      } else {
-        setIsQuizComplete(true);
-      }
-      return;
-    }
-    
-    if (currentQuestionIndex < questions.length - 1) {
-      setCurrentQuestionIndex(prev => prev + 1);
-      setQuestionNumber(prev => prev + 1);
-    } else {
-      setQuestionNumber(prev => prev + 1);
-      loadNewQuestion();
-    }
-    
-    setDoubtMessages([]);
-  };
-
-  const handleJumpToQuestion = (index: number) => {
-    setCurrentQuestionIndex(index);
-    setQuestionNumber(index + 1);
-  };
-
-  useEffect(() => {
-    if (isQuizComplete && onScoreUpdate) {
-      onScoreUpdate(score);
-    }
-  }, [isQuizComplete, score, onScoreUpdate]);
-
-  const handleSubmitQuiz = () => {
-    if (!simultaneousResults) {
-      let finalScore = 0;
-      Object.entries(answers).forEach(([indexStr, answer]) => {
-        const index = parseInt(indexStr);
-        if (index < questions.length && answer === questions[index].correctAnswer) {
-          finalScore++;
+      try {
+        // Save quiz result to database if user is logged in
+        const { data: { user } } = await supabase.auth.getUser();
+        
+        if (user) {
+          const { data: userData } = await supabase
+            .from('profiles')
+            .select('name')
+            .eq('id', user.id)
+            .single();
+            
+          const userName = userData?.name || 'User';
+          
+          const { data: resultData, error } = await supabase
+            .from('quiz_results')
+            .insert({
+              quiz_id: quizId || 'ai-generated',
+              user_id: user.id,
+              user_name: userName,
+              score: score,
+              total_questions: parseInt(questionCount),
+              time_taken: null
+            })
+            .select('id')
+            .single();
+            
+          if (resultData && resultData.id) {
+            // Navigate to results page
+            navigate(`/quiz/results/${resultData.id}`);
+            return;
+          }
         }
-      });
-      setScore(finalScore);
-    }
-    
-    setIsQuizComplete(true);
-  };
-
-  const handleAskDoubt = async () => {
-    if (!doubt.trim()) {
-      toast.error("Please enter your doubt first");
+      } catch (error) {
+        console.error("Error saving quiz result:", error);
+      }
+      
       return;
     }
+    setQuestionNumber(prev => prev + 1);
+    loadQuestion();
+  };
 
-    if (!currentQuestion) return;
-
-    setIsLoadingAnswer(true);
-    setDoubtMessages(prev => [...prev, { type: 'doubt', content: doubt }]);
-
-    const answer = await handleDoubt(
-      doubt,
-      currentQuestion.question,
-      currentQuestion.options,
-      currentQuestion.correctAnswer,
-      currentQuestion.explanation
-    );
-
-    if (answer) {
-      setDoubtMessages(prev => [...prev, { type: 'answer', content: answer }]);
-    }
-
-    setDoubt("");
-    setIsLoadingAnswer(false);
+  const handleRestartQuiz = () => {
+    setScore(0);
+    setQuestionNumber(1);
+    setIsQuizComplete(false);
+    setTimeRemaining(timeLimit !== "No Limit" ? parseInt(timeLimit) : null);
+    loadQuestion();
   };
 
   const formatTime = (seconds: number): string => {
@@ -303,206 +167,86 @@ export const Quiz = ({
   if (isQuizComplete) {
     return (
       <>
-        <div className="max-w-4xl mx-auto p-6">
-          <MultiplexHorizontalAd />
-        </div>
+        <QuizAd className="my-4" />
         <QuizResults 
           score={score} 
-          totalQuestions={questionCount !== "No Limit" ? parseInt(questionCount) : loadedQuestionsCount} 
+          totalQuestions={parseInt(questionCount)} 
           subject={subject}
           chapter={chapter}
           topic={topic}
           difficulty={difficulty}
           questions={questions}
           answers={answers}
-          onJumpToQuestion={handleJumpToQuestion}
-          simultaneousResults={simultaneousResults}
-          quizId={quizId}
+          quizId={quizId || "ai-generated"}
         />
+        <NativeAd className="my-8" />
       </>
     );
   }
 
-  if (isLoadingQuestion || !currentQuestion) {
-    return <div className="text-center p-8">Loading question...</div>;
+  if (!currentQuestion) {
+    return <div className="text-center">Loading question...</div>;
   }
-
-  const isLastQuestion = questionCount !== "No Limit" && currentQuestionIndex >= parseInt(questionCount) - 1;
 
   return (
     <div className="max-w-4xl mx-auto p-6 space-y-6 mt-16">
+      {/* Top Ad */}
+      <QuizAd className="mb-4" />
+      
       <div className="flex justify-between items-center">
         <div className="text-lg font-semibold">
           Question {questionNumber} {questionCount !== "No Limit" && `of ${questionCount}`}
         </div>
         <div className="flex items-center gap-4">
-          <div className="text-lg">Score: {simultaneousResults ? score : '-'}</div>
+          <div className="text-lg">Score: {score}</div>
           {timeRemaining !== null && (
             <div className="text-lg">Time: {formatTime(timeRemaining)}</div>
           )}
         </div>
       </div>
 
-      <div className="my-4">
-        <HorizontalAd />
-      </div>
-
-      {!simultaneousResults && (
-        <div className="flex justify-center mb-4">
-          <div className="flex flex-wrap gap-2 max-w-xl">
-            {questions.map((_, index) => (
-              <button
-                key={index}
-                className={`h-8 w-8 rounded-full flex items-center justify-center text-sm ${
-                  index === currentQuestionIndex
-                    ? 'bg-medblue text-white'
-                    : answers[index]
-                    ? 'bg-gray-200 dark:bg-gray-700'
-                    : 'bg-white dark:bg-gray-800 border'
-                }`}
-                onClick={() => handleJumpToQuestion(index)}
-              >
-                {index + 1}
-              </button>
-            ))}
-          </div>
-        </div>
-      )}
-
       <div className="bg-white p-6 rounded-lg shadow-md">
-        <h2 className="text-xl font-semibold mb-4">{currentQuestion?.question}</h2>
+        <h2 className="text-xl font-semibold mb-4">{currentQuestion.question}</h2>
         <div className="space-y-3">
-          {currentQuestion?.options.map((option, index) => (
+          {currentQuestion.options.map((option, index) => (
             <Button
               key={index}
               onClick={() => handleAnswerSelect(option[0])}
-              className={`w-full text-left justify-start border ${getOptionStyle(option)} overflow-x-auto whitespace-normal min-h-[48px] h-auto px-4 py-3 hover:bg-gray-100 active:bg-gray-100 transition-colors relative`}
+              className={`w-full text-left justify-start border ${getOptionStyle(option)} overflow-x-auto whitespace-normal min-h-[48px] h-auto px-4 py-3 hover:bg-gray-100 active:bg-gray-100 transition-colors`}
               disabled={!!selectedAnswer || timeRemaining === 0}
               variant="outline"
             >
               <span className="break-words text-base">{option}</span>
-              {simultaneousResults && selectedAnswer && (
-                <span className="absolute right-2">
-                  {option[0] === currentQuestion.correctAnswer ? (
-                    <Check className="h-5 w-5 text-green-500" />
-                  ) : selectedAnswer === option[0] ? (
-                    <X className="h-5 w-5 text-red-500" />
-                  ) : null}
-                </span>
-              )}
             </Button>
           ))}
         </div>
 
-        {questionNumber % 2 === 0 && (
-          <div className="my-6">
-            <InArticleAd />
-          </div>
-        )}
+        {questionNumber % 2 === 0 && <InArticleAd className="my-6" />}
 
-        {simultaneousResults ? (
-          selectedAnswer && (
-            <div className="mt-6">
-              <div className="flex justify-between items-center mb-4">
-                <Button
-                  onClick={() => setShowExplanation(!showExplanation)}
-                  variant="outline"
-                  className="flex items-center gap-2"
-                >
-                  <BookOpenText className="h-4 w-4" />
-                  {showExplanation ? "Hide" : "Show"} Explanation
-                </Button>
-                <Button onClick={handleNext} className="flex items-center gap-2">
-                  {isLastQuestion ? "Finish Quiz" : "Next Question"}
-                  <ArrowRight className="h-4 w-4" />
-                </Button>
-              </div>
-
-              {showExplanation && (
-                <Card className="mt-4 p-4">
-                  <div className="space-y-4">
-                    <div>
-                      <h3 className="font-semibold mb-2">Correct Answer Explanation:</h3>
-                      <p className="text-gray-700">{currentQuestion?.explanation}</p>
-                    </div>
-                    
-                    <div className="py-2">
-                      <SquareAd />
-                    </div>
-                    
-                    <div className="border-t pt-4">
-                      <h3 className="font-semibold mb-2 flex items-center gap-2">
-                        <MessageCircleQuestion className="h-5 w-5 text-medblue" />
-                        Ask a Doubt
-                      </h3>
-                      <div className="space-y-4">
-                        {doubtMessages.map((message, index) => (
-                          <div
-                            key={index}
-                            className={`p-3 rounded-lg ${
-                              message.type === 'doubt'
-                                ? 'bg-blue-50 ml-auto max-w-[80%]'
-                                : 'bg-gray-50 mr-auto max-w-[80%]'
-                            }`}
-                          >
-                            <p className="text-sm">{message.content}</p>
-                          </div>
-                        ))}
-                        
-                        <div className="flex gap-2">
-                          <Textarea
-                            placeholder="Ask any doubt about the question, options, or explanation..."
-                            value={doubt}
-                            onChange={(e) => setDoubt(e.target.value)}
-                            className="flex-1"
-                          />
-                          <Button 
-                            onClick={handleAskDoubt}
-                            disabled={isLoadingAnswer}
-                            className="self-end"
-                          >
-                            Ask Doubt
-                          </Button>
-                        </div>
-                      </div>
-                    </div>
-                  </div>
-                </Card>
-              )}
-            </div>
-          )
-        ) : (
-          <div className="mt-6 flex justify-between">
-            <Button 
-              onClick={() => handleJumpToQuestion(Math.max(0, currentQuestionIndex - 1))}
+        {selectedAnswer && (
+          <div className="mt-6">
+            <Button
+              onClick={() => setShowExplanation(!showExplanation)}
               variant="outline"
-              disabled={currentQuestionIndex === 0}
+              className="mb-4"
             >
-              Previous
+              {showExplanation ? "Hide" : "Show"} Explanation
             </Button>
-            
-            {isLastQuestion ? (
-              <Button 
-                onClick={handleSubmitQuiz}
-                className="bg-green-600 hover:bg-green-700"
-              >
-                Submit Quiz
-              </Button>
-            ) : (
-              <Button 
-                onClick={() => handleJumpToQuestion(currentQuestionIndex + 1)}
-                disabled={currentQuestionIndex === questions.length - 1}
-              >
-                Next
-              </Button>
+            {showExplanation && (
+              <div className="bg-gray-50 p-4 rounded-md">
+                <p className="text-gray-700">{currentQuestion.explanation}</p>
+                <NativeAd className="mt-6" />
+              </div>
             )}
+            <Button onClick={handleNext} className="mt-4">
+              Next Question
+            </Button>
           </div>
         )}
       </div>
       
-      <div className="mt-6">
-        <MultiplexHorizontalAd />
-      </div>
+      {/* Bottom Ad */}
+      <NativeAd className="mt-6" />
     </div>
   );
 };

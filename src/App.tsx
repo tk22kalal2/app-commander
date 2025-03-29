@@ -15,6 +15,7 @@ import Blog from "@/pages/Blog";
 import BlogPost from "@/pages/BlogPost";
 import BrowseQuizzes from "@/pages/BrowseQuizzes";
 import QuizResults from "@/pages/QuizResults";
+import Quiz from "@/pages/Quiz";
 
 const router = createBrowserRouter([
   {
@@ -55,12 +56,8 @@ const router = createBrowserRouter([
     element: <QuizResults />,
   },
   {
-    path: "/blog",
-    element: <Blog />,
-  },
-  {
-    path: "/blog/:id",
-    element: <BlogPost />,
+    path: "/quiz/:subject/:chapter/:topic",
+    element: <Quiz />,
   },
 ]);
 

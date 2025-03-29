@@ -1,71 +1,43 @@
 
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { Trophy, BookOpenText, MessageCircleQuestion } from "lucide-react";
+import { Trophy } from "lucide-react";
 import { useEffect, useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
-import { useNavigate } from "react-router-dom";
-import { SquareAd } from "./ads/SquareAd";
-import { Textarea } from "./ui/textarea";
-import { handleDoubt } from "@/services/groqService";
-import { toast } from "sonner";
-import { StarRating } from "./StarRating";
-
-interface Question {
-  question: string;
-  options: string[];
-  correctAnswer: string;
-  explanation: string;
-  subject: string;
-}
-
-interface DoubtMessage {
-  type: 'doubt' | 'answer';
-  content: string;
-}
 
 interface QuizResultsProps {
   score: number;
   totalQuestions: number;
+  onRestartQuiz?: () => void;
   subject: string;
   chapter: string;
   topic: string;
   difficulty: string;
-  questions?: Question[];
+  questions?: any[];
   answers?: Record<number, string>;
-  onJumpToQuestion?: (index: number) => void;
-  simultaneousResults?: boolean;
   quizId?: string;
 }
 
 export const QuizResults = ({ 
   score, 
-  totalQuestions,
+  totalQuestions, 
+  onRestartQuiz,
   subject,
   chapter,
   topic,
   difficulty,
-  questions: initialQuestions = [],
+  questions = [],
   answers = {},
-  onJumpToQuestion,
-  simultaneousResults = true,
   quizId
 }: QuizResultsProps) => {
   const [userName, setUserName] = useState<string>("");
-  const [selectedQuestionIndex, setSelectedQuestionIndex] = useState<number | null>(null);
-  const [doubt, setDoubt] = useState("");
-  const [doubtMessages, setDoubtMessages] = useState<Record<number, DoubtMessage[]>>({});
-  const [isLoadingAnswer, setIsLoadingAnswer] = useState(false);
-  const [showExplanation, setShowExplanation] = useState(false);
-  const [questions, setQuestions] = useState<Question[]>(initialQuestions);
-  const [averageRating, setAverageRating] = useState<number>(0);
-  const [userRating, setUserRating] = useState<number>(0);
+  const [rankings, setRankings] = useState<any[]>([]);
   const percentage = Math.round((score / totalQuestions) * 100);
-  const navigate = useNavigate();
   
   useEffect(() => {
-    const fetchUserName = async () => {
+    const fetchUserDataAndRankings = async () => {
       try {
+        // Fetch current user name
         const { data: { user } } = await supabase.auth.getUser();
         
         if (user) {
@@ -75,118 +47,56 @@ export const QuizResults = ({
             .eq('id', user.id)
             .single();
           
-          setUserName(userData?.name || 'User');
+          if (userData) {
+            setUserName(userData.name || 'User');
+          }
+        }
+        
+        // Fetch rankings for this quiz
+        if (quizId) {
+          const { data: resultsData } = await supabase
+            .from('quiz_results')
+            .select('*')
+            .eq('quiz_id', quizId)
+            .order('score', { ascending: false });
+            
+          if (resultsData) {
+            // Get unique user IDs from results
+            const userIds = resultsData
+              .filter(r => r.user_id)
+              .map(r => r.user_id);
+            
+            // Fetch college names for users
+            const { data: profilesData } = await supabase
+              .from('profiles')
+              .select('id, college_name')
+              .in('id', userIds);
+              
+            const userCollegeMap = new Map();
+            if (profilesData) {
+              profilesData.forEach(profile => {
+                userCollegeMap.set(profile.id, profile.college_name);
+              });
+            }
+            
+            // Add college names to results
+            const formattedRankings = resultsData.map(result => ({
+              ...result,
+              college_name: result.user_id && userCollegeMap.has(result.user_id) 
+                ? userCollegeMap.get(result.user_id) 
+                : 'Not specified'
+            }));
+            
+            setRankings(formattedRankings);
+          }
         }
       } catch (error: any) {
-        console.error('Error fetching user name:', error);
+        console.error('Error fetching data:', error);
       }
     };
     
-    fetchUserName();
-  }, []);
-
-  useEffect(() => {
-    const uniqueQuestionsMap = new Map();
-    initialQuestions.forEach(q => {
-      if (!uniqueQuestionsMap.has(q.question)) {
-        uniqueQuestionsMap.set(q.question, q);
-      }
-    });
-    const uniqueQuestions = Array.from(uniqueQuestionsMap.values());
-    setQuestions(uniqueQuestions);
-  }, [initialQuestions]);
-
-  useEffect(() => {
-    if (quizId) {
-      fetchQuizRatings();
-    }
+    fetchUserDataAndRankings();
   }, [quizId]);
-
-  const fetchQuizRatings = async () => {
-    if (!quizId) return;
-
-    try {
-      // Get average rating
-      const { data: avgData, error: avgError } = await supabase
-        .rpc('get_quiz_avg_rating', { quiz_uuid: quizId });
-      
-      if (avgError) throw avgError;
-      setAverageRating(Number(avgData) || 0);
-      
-      // Get user's rating if logged in
-      const { data: { user } } = await supabase.auth.getUser();
-      
-      if (user) {
-        const { data: userRatingData, error: userRatingError } = await supabase
-          .from('quiz_ratings')
-          .select('rating')
-          .eq('quiz_id', quizId)
-          .eq('user_id', user.id)
-          .maybeSingle();
-        
-        if (userRatingError) throw userRatingError;
-        if (userRatingData) {
-          setUserRating(userRatingData.rating);
-        }
-      }
-    } catch (error: any) {
-      console.error("Error fetching ratings:", error);
-    }
-  };
-
-  const handleAskDoubt = async (questionIndex: number) => {
-    if (!doubt.trim()) {
-      toast.error("Please enter your doubt first");
-      return;
-    }
-
-    if (!questions[questionIndex]) return;
-    const question = questions[questionIndex];
-
-    setIsLoadingAnswer(true);
-    const newDoubtMessage = { type: 'doubt' as const, content: doubt };
-    
-    setDoubtMessages(prev => ({
-      ...prev,
-      [questionIndex]: [...(prev[questionIndex] || []), newDoubtMessage]
-    }));
-
-    const answer = await handleDoubt(
-      doubt,
-      question.question,
-      question.options,
-      question.correctAnswer,
-      question.explanation
-    );
-
-    if (answer) {
-      setDoubtMessages(prev => ({
-        ...prev,
-        [questionIndex]: [
-          ...(prev[questionIndex] || []), 
-          { type: 'answer' as const, content: answer }
-        ]
-      }));
-    }
-
-    setDoubt("");
-    setIsLoadingAnswer(false);
-  };
-
-  const handleJumpToQuestion = (index: number) => {
-    if (onJumpToQuestion && !simultaneousResults) {
-      onJumpToQuestion(index);
-      navigate(-1);
-    } else {
-      setSelectedQuestionIndex(index);
-      setShowExplanation(false);
-    }
-  };
-
-  const handleRated = (rating: number) => {
-    setUserRating(rating);
-    fetchQuizRatings();
-  };
   
   return (
     <div className="max-w-2xl mx-auto p-6">
@@ -210,145 +120,48 @@ export const QuizResults = ({
             {percentage}% Correct
           </div>
           
-          {quizId && (
-            <div className="flex flex-col items-center gap-2 py-4 border-t border-b">
-              <div className="text-lg font-medium">Rate this quiz</div>
-              <div className="flex items-center gap-4">
-                <StarRating 
-                  quizId={quizId} 
-                  initialRating={userRating} 
-                  onRated={handleRated}
-                />
-                {averageRating > 0 && (
-                  <div className="text-sm text-gray-500">
-                    Average: {averageRating.toFixed(1)}/5
-                  </div>
-                )}
-              </div>
-            </div>
-          )}
-          
-          {/* Ad within results */}
-          <div className="my-4">
-            <SquareAd />
-          </div>
-          
-          {/* Question review section */}
-          {questions.length > 0 && (
-            <div className="mt-6 text-left">
-              <h3 className="font-semibold text-lg mb-4">Review Questions</h3>
-              
-              <div className="flex flex-wrap gap-2 mb-6 justify-center">
-                {questions.map((_, index) => (
-                  <button
-                    key={index}
-                    className={`h-10 w-10 rounded-full flex items-center justify-center text-sm ${
-                      index === selectedQuestionIndex
-                        ? 'bg-medblue text-white'
-                        : answers[index] === questions[index].correctAnswer
-                        ? 'bg-green-100 border-green-500 border-2'
-                        : answers[index]
-                        ? 'bg-red-100 border-red-500 border-2'
-                        : 'bg-gray-100 border'
-                    }`}
-                    onClick={() => handleJumpToQuestion(index)}
-                  >
-                    {index + 1}
-                  </button>
-                ))}
-              </div>
-              
-              {selectedQuestionIndex !== null && questions[selectedQuestionIndex] && (
-                <Card className="p-4 mb-6">
-                  <h4 className="font-medium text-lg">
-                    Question {selectedQuestionIndex + 1}: {questions[selectedQuestionIndex].question}
-                  </h4>
-                  
-                  <div className="mt-4 space-y-2">
-                    {questions[selectedQuestionIndex].options.map((option, idx) => (
-                      <div 
-                        key={idx}
-                        className={`p-3 rounded border ${
-                          option[0] === questions[selectedQuestionIndex].correctAnswer
-                            ? 'bg-green-50 border-green-300'
-                            : answers[selectedQuestionIndex] === option[0]
-                            ? 'bg-red-50 border-red-300'
-                            : 'bg-gray-50 border-gray-200'
-                        }`}
-                      >
-                        {option}
-                      </div>
+          {rankings.length > 0 && (
+            <div className="mt-8">
+              <h3 className="text-xl font-semibold mb-4">Leaderboard</h3>
+              <div className="overflow-x-auto">
+                <table className="w-full border-collapse">
+                  <thead>
+                    <tr className="bg-gray-100">
+                      <th className="px-4 py-2 text-left">Rank</th>
+                      <th className="px-4 py-2 text-left">Name</th>
+                      <th className="px-4 py-2 text-left">College</th>
+                      <th className="px-4 py-2 text-right">Score</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {rankings.map((ranking, index) => (
+                      <tr key={index} className="border-t">
+                        <td className="px-4 py-2">
+                          {index === 0 ? '🥇' : index === 1 ? '🥈' : index === 2 ? '🥉' : `${index + 1}`}
+                        </td>
+                        <td className="px-4 py-2 font-medium">{ranking.user_name}</td>
+                        <td className="px-4 py-2">{ranking.college_name}</td>
+                        <td className="px-4 py-2 text-right">{ranking.score}/{ranking.total_questions}</td>
+                      </tr>
                     ))}
-                  </div>
-                  
-                  <div className="mt-4">
-                    <Button
-                      onClick={() => setShowExplanation(!showExplanation)}
-                      variant="outline"
-                      className="flex items-center gap-2"
-                    >
-                      <BookOpenText className="h-4 w-4" />
-                      {showExplanation ? "Hide" : "Show"} Explanation
-                    </Button>
-                  </div>
-                  
-                  {showExplanation && (
-                    <div className="mt-4">
-                      <h5 className="font-medium">Explanation:</h5>
-                      <p className="mt-2 text-gray-700">{questions[selectedQuestionIndex].explanation}</p>
-                    </div>
-                  )}
-                  
-                  <div className="mt-6 border-t pt-4">
-                    <h5 className="font-medium flex items-center gap-2 mb-3">
-                      <MessageCircleQuestion className="h-5 w-5 text-medblue" />
-                      Ask a Doubt
-                    </h5>
-                    
-                    <div className="space-y-4">
-                      {doubtMessages[selectedQuestionIndex]?.map((message, index) => (
-                        <div
-                          key={index}
-                          className={`p-3 rounded-lg ${
-                            message.type === 'doubt'
-                              ? 'bg-blue-50 ml-auto max-w-[80%]'
-                              : 'bg-gray-50 mr-auto max-w-[80%]'
-                          }`}
-                        >
-                          <p className="text-sm">{message.content}</p>
-                        </div>
-                      ))}
-                      
-                      <div className="flex gap-2">
-                        <Textarea
-                          placeholder="Ask any doubt about this question..."
-                          value={doubt}
-                          onChange={(e) => setDoubt(e.target.value)}
-                          className="flex-1"
-                        />
-                        <Button 
-                          onClick={() => handleAskDoubt(selectedQuestionIndex)}
-                          disabled={isLoadingAnswer}
-                          className="self-end"
-                        >
-                          Ask Doubt
-                        </Button>
-                      </div>
-                    </div>
-                  </div>
-                </Card>
-              )}
+                  </tbody>
+                </table>
+              </div>
             </div>
           )}
           
-          <div className="mt-8">
-            <button 
-              onClick={() => navigate("/quiz/setup")}
-              className="relative px-12 py-4 text-xl font-bold text-white bg-gradient-to-r from-teal-400 to-emerald-500 rounded-full overflow-hidden shadow-lg transition-all duration-300 hover:scale-105 hover:shadow-xl active:scale-95"
-            >
-              <span className="relative z-10">New Quiz</span>
-              <div className="absolute inset-0 bg-white opacity-20 transform rotate-12 translate-y-12"></div>
-            </button>
+          <div className="space-y-2">
+            <p className="text-gray-600">
+              Keep practicing to improve your medical knowledge.
+            </p>
+            {onRestartQuiz && (
+              <Button 
+                onClick={onRestartQuiz}
+                className="mt-4 bg-medical-blue hover:bg-medical-blue/90"
+              >
+                Start New Quiz
+              </Button>
+            )}
           </div>
         </CardContent>
       </Card>

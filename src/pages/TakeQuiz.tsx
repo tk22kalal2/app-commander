@@ -119,7 +119,16 @@ const TakeQuiz = () => {
           quizId={quiz.id}
           timePerQuestion={quiz.time_per_question}
           questionCount={quiz.question_count}
-          formattedQuestions={formattedQuestions}
+          formattedQuestions={formattedQuestions.map(q => ({
+            id: q.id,
+            question_text: q.question,
+            option_a: q.options[0].substring(3),
+            option_b: q.options[1].substring(3),
+            option_c: q.options[2].substring(3),
+            option_d: q.options[3].substring(3),
+            correct_answer: q.correct_answer,
+            explanation: q.explanation
+          }))}
         />
       </div>
       
