@@ -13,6 +13,7 @@ const Quiz = () => {
   const [difficulty, setDifficulty] = useState("medium");
   const [questionCount, setQuestionCount] = useState("10");
   const [timeLimit, setTimeLimit] = useState("60");
+  const [simultaneousResults, setSimultaneousResults] = useState(true);
 
   useEffect(() => {
     // Load parameters from URL or session storage
@@ -20,10 +21,12 @@ const Quiz = () => {
     const difficultyParam = searchParams.get("difficulty");
     const questionCountParam = searchParams.get("count");
     const timeLimitParam = searchParams.get("time");
+    const simultaneousParam = searchParams.get("simultaneous");
 
     if (difficultyParam) setDifficulty(difficultyParam);
     if (questionCountParam) setQuestionCount(questionCountParam);
     if (timeLimitParam) setTimeLimit(timeLimitParam);
+    if (simultaneousParam) setSimultaneousResults(simultaneousParam === "true");
 
     setTimeout(() => setIsLoading(false), 500);
   }, []);
@@ -53,7 +56,7 @@ const Quiz = () => {
             difficulty={difficulty}
             questionCount={questionCount}
             timeLimit={timeLimit}
-            simultaneousResults={true}
+            simultaneousResults={simultaneousResults}
             quizId="generated-quiz"
           />
         </div>

@@ -9,7 +9,6 @@ import { QuizError } from "@/components/quiz/QuizError";
 import { AccessCodeForm } from "@/components/quiz/AccessCodeForm";
 import { QuizDisplay } from "@/components/quiz/QuizDisplay";
 import { supabase } from "@/integrations/supabase/client";
-import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
 
 const TakeQuiz = () => {
@@ -120,13 +119,13 @@ const TakeQuiz = () => {
           timePerQuestion={quiz.time_per_question}
           questionCount={quiz.question_count}
           formattedQuestions={formattedQuestions.map(q => ({
-            id: q.id,
+            id: q.question,  // Using question as id since FormattedQuestion doesn't have id
             question_text: q.question,
             option_a: q.options[0].substring(3),
             option_b: q.options[1].substring(3),
             option_c: q.options[2].substring(3),
             option_d: q.options[3].substring(3),
-            correct_answer: q.correct_answer,
+            correct_answer: q.correctAnswer,  // Fixed property name
             explanation: q.explanation
           }))}
         />

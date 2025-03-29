@@ -18,6 +18,7 @@ interface QuizProps {
   questionCount: string;
   timeLimit: string;
   quizId?: string;
+  simultaneousResults?: boolean;
 }
 
 interface Question {
@@ -28,7 +29,7 @@ interface Question {
   subject: string;
 }
 
-export const Quiz = ({ subject, chapter, topic, difficulty, questionCount, timeLimit, quizId }: QuizProps) => {
+export const Quiz = ({ subject, chapter, topic, difficulty, questionCount, timeLimit, quizId, simultaneousResults }: QuizProps) => {
   const [currentQuestion, setCurrentQuestion] = useState<Question | null>(null);
   const [selectedAnswer, setSelectedAnswer] = useState<string | null>(null);
   const [showExplanation, setShowExplanation] = useState(false);
@@ -171,6 +172,7 @@ export const Quiz = ({ subject, chapter, topic, difficulty, questionCount, timeL
         <QuizResults 
           score={score} 
           totalQuestions={parseInt(questionCount)} 
+          onRestartQuiz={handleRestartQuiz}
           subject={subject}
           chapter={chapter}
           topic={topic}
