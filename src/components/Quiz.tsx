@@ -113,6 +113,7 @@ export const Quiz = ({ subject, chapter, topic, difficulty, questionCount, timeL
 
   const handleNext = async () => {
     if (questionCount !== "No Limit" && questionNumber >= parseInt(questionCount)) {
+      // Log final results for debugging
       console.log("Quiz complete. Final score:", score, "out of", questionCount);
       console.log("User answers:", JSON.stringify(answers));
       console.log("Questions:", JSON.stringify(questions.map(q => q.question)));
@@ -181,6 +182,14 @@ export const Quiz = ({ subject, chapter, topic, difficulty, questionCount, timeL
   };
 
   if (isQuizComplete) {
+    // Important: Ensure we're passing the final score, questions, and answers to QuizResults
+    console.log("Rendering QuizResults with:", {
+      score,
+      totalQuestions: parseInt(questionCount),
+      questions, 
+      answers
+    });
+    
     return (
       <>
         <QuizAd className="my-4" />
