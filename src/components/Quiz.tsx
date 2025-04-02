@@ -101,12 +101,15 @@ export const Quiz = ({ subject, chapter, topic, difficulty, questionCount, timeL
       // Store the user's answer
       setAnswers(prev => ({...prev, [questionNumber-1]: answer}));
       
-      // Check if answer is correct
-      if (answer === currentQuestion?.correctAnswer) {
-        setScore(prev => prev + 1);
-        console.log(`Correct answer selected: ${answer}, new score: ${score + 1}`);
+      // Check if answer is correct - FIXED: Correctly increment score at the time of selection
+      if (currentQuestion && answer === currentQuestion.correctAnswer) {
+        setScore(prevScore => {
+          const newScore = prevScore + 1;
+          console.log(`Correct answer selected: ${answer}, updating score from ${prevScore} to ${newScore}`);
+          return newScore;
+        });
       } else {
-        console.log(`Incorrect answer selected: ${answer}, expected: ${currentQuestion?.correctAnswer}`);
+        console.log(`Selected answer: ${answer}, correct was: ${currentQuestion?.correctAnswer}`);
       }
     }
   };
@@ -116,7 +119,7 @@ export const Quiz = ({ subject, chapter, topic, difficulty, questionCount, timeL
       // Log final results for debugging
       console.log("Quiz complete. Final score:", score, "out of", questionCount);
       console.log("User answers:", JSON.stringify(answers));
-      console.log("Questions:", JSON.stringify(questions.map(q => q.question)));
+      console.log("Questions:", JSON.stringify(questions));
       
       setIsQuizComplete(true);
       

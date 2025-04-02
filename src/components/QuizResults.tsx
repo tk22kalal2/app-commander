@@ -1,4 +1,3 @@
-
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Trophy } from "lucide-react";
@@ -47,7 +46,6 @@ export const QuizResults = ({
     
     const fetchUserDataAndRankings = async () => {
       try {
-        // Fetch current user name
         const { data: { user } } = await supabase.auth.getUser();
         
         if (user) {
@@ -62,7 +60,6 @@ export const QuizResults = ({
           }
         }
         
-        // Fetch rankings for this quiz
         if (quizId) {
           const { data: resultsData } = await supabase
             .from('quiz_results')
@@ -71,12 +68,10 @@ export const QuizResults = ({
             .order('score', { ascending: false });
             
           if (resultsData) {
-            // Get unique user IDs from results
             const userIds = resultsData
               .filter(r => r.user_id)
               .map(r => r.user_id);
             
-            // Fetch college names for users
             const { data: profilesData } = await supabase
               .from('profiles')
               .select('id, college_name')
@@ -89,7 +84,6 @@ export const QuizResults = ({
               });
             }
             
-            // Add college names to results
             const formattedRankings = resultsData.map(result => ({
               ...result,
               college_name: result.user_id && userCollegeMap.has(result.user_id) 
