@@ -97,16 +97,26 @@ export const Quiz = ({ subject, chapter, topic, difficulty, questionCount, timeL
   const handleAnswerSelect = (answer: string) => {
     if (!selectedAnswer && timeRemaining !== 0) {
       setSelectedAnswer(answer);
+      
+      // Store the user's answer
       setAnswers(prev => ({...prev, [questionNumber-1]: answer}));
       
+      // Check if answer is correct
       if (answer === currentQuestion?.correctAnswer) {
         setScore(prev => prev + 1);
+        console.log(`Correct answer selected: ${answer}, new score: ${score + 1}`);
+      } else {
+        console.log(`Incorrect answer selected: ${answer}, expected: ${currentQuestion?.correctAnswer}`);
       }
     }
   };
 
   const handleNext = async () => {
     if (questionCount !== "No Limit" && questionNumber >= parseInt(questionCount)) {
+      console.log("Quiz complete. Final score:", score, "out of", questionCount);
+      console.log("User answers:", JSON.stringify(answers));
+      console.log("Questions:", JSON.stringify(questions.map(q => q.question)));
+      
       setIsQuizComplete(true);
       
       if (!simultaneousResults) {
@@ -149,6 +159,7 @@ export const Quiz = ({ subject, chapter, topic, difficulty, questionCount, timeL
       
       return;
     }
+    
     setQuestionNumber(prev => prev + 1);
     loadQuestion();
   };

@@ -35,6 +35,16 @@ export const QuizResults = ({
   const percentage = Math.round((score / totalQuestions) * 100);
   
   useEffect(() => {
+    console.log("QuizResults received:", {
+      score,
+      totalQuestions,
+      answers,
+      questions: questions?.map(q => ({ 
+        question: q.question,
+        correctAnswer: q.correctAnswer
+      }))
+    });
+    
     const fetchUserDataAndRankings = async () => {
       try {
         // Fetch current user name
@@ -96,7 +106,7 @@ export const QuizResults = ({
     };
     
     fetchUserDataAndRankings();
-  }, [quizId]);
+  }, [quizId, score, totalQuestions]);
   
   return (
     <div className="max-w-2xl mx-auto p-6">

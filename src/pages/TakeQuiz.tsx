@@ -108,6 +108,18 @@ const TakeQuiz = () => {
     );
   }
 
+  // Map the formatted questions to the format expected by QuizDisplay
+  const displayQuestions = formattedQuestions.map(q => ({
+    id: q.question, // Using question as id since FormattedQuestion doesn't have id
+    question_text: q.question,
+    option_a: q.options[0].substring(3),
+    option_b: q.options[1].substring(3),
+    option_c: q.options[2].substring(3),
+    option_d: q.options[3].substring(3),
+    correct_answer: q.correctAnswer,
+    explanation: q.explanation
+  }));
+
   return (
     <div className="min-h-screen bg-medbg dark:bg-gray-900">
       <Navbar />
@@ -119,16 +131,7 @@ const TakeQuiz = () => {
           quizId={quiz.id}
           timePerQuestion={quiz.time_per_question}
           questionCount={quiz.question_count}
-          formattedQuestions={formattedQuestions.map(q => ({
-            id: q.question,  // Using question as id since FormattedQuestion doesn't have id
-            question_text: q.question,
-            option_a: q.options[0].substring(3),
-            option_b: q.options[1].substring(3),
-            option_c: q.options[2].substring(3),
-            option_d: q.options[3].substring(3),
-            correct_answer: q.correctAnswer,  // Fixed property name
-            explanation: q.explanation
-          }))}
+          formattedQuestions={displayQuestions}
         />
       </div>
       
