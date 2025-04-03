@@ -4,6 +4,7 @@ import { Button } from "@/components/ui/button";
 import { Trophy } from "lucide-react";
 import { useEffect, useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
+import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 
 interface QuizResultsProps {
   score: number;
@@ -219,30 +220,33 @@ export const QuizResults = ({
           {rankings.length > 0 && (
             <div className="mt-8">
               <h3 className="text-xl font-semibold mb-4">Leaderboard</h3>
-              <div className="overflow-x-auto">
-                <table className="w-full border-collapse">
-                  <thead>
-                    <tr className="bg-gray-100">
-                      <th className="px-4 py-2 text-left">Rank</th>
-                      <th className="px-4 py-2 text-left">Name</th>
-                      <th className="px-4 py-2 text-left">College</th>
-                      <th className="px-4 py-2 text-right">Score</th>
-                    </tr>
-                  </thead>
-                  <tbody>
-                    {rankings.map((ranking, index) => (
-                      <tr key={index} className="border-t">
-                        <td className="px-4 py-2">
+              <Table>
+                <TableHeader>
+                  <TableRow>
+                    <TableHead>Rank</TableHead>
+                    <TableHead>Name</TableHead>
+                    <TableHead>College</TableHead>
+                    <TableHead className="text-right">Score</TableHead>
+                    <TableHead className="text-right">Percentage</TableHead>
+                  </TableRow>
+                </TableHeader>
+                <TableBody>
+                  {rankings.map((ranking, index) => {
+                    const rankPercentage = Math.round((ranking.score / ranking.total_questions) * 100);
+                    return (
+                      <TableRow key={index}>
+                        <TableCell>
                           {index === 0 ? '🥇' : index === 1 ? '🥈' : index === 2 ? '🥉' : `${index + 1}`}
-                        </td>
-                        <td className="px-4 py-2 font-medium">{ranking.user_name}</td>
-                        <td className="px-4 py-2">{ranking.college_name}</td>
-                        <td className="px-4 py-2 text-right">{ranking.score}/{ranking.total_questions}</td>
-                      </tr>
-                    ))}
-                  </tbody>
-                </table>
-              </div>
+                        </TableCell>
+                        <TableCell className="font-medium">{ranking.user_name}</TableCell>
+                        <TableCell>{ranking.college_name}</TableCell>
+                        <TableCell className="text-right">{ranking.score}/{ranking.total_questions}</TableCell>
+                        <TableCell className="text-right">{rankPercentage}%</TableCell>
+                      </TableRow>
+                    );
+                  })}
+                </TableBody>
+              </Table>
             </div>
           )}
           

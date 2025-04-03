@@ -1,3 +1,4 @@
+
 import { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { generateQuestion } from "@/services/groqService";
@@ -18,7 +19,7 @@ interface QuizProps {
   timeLimit: string;
   quizId?: string;
   simultaneousResults?: boolean;
-  preloadedQuestions?: Question[];
+  preloadedQuestions?: any[];
 }
 
 interface Question {
@@ -36,10 +37,11 @@ export const Quiz = ({
   difficulty, 
   questionCount, 
   timeLimit, 
-  quizId, 
-  simultaneousResults,
+  quizId,
+  simultaneousResults = false,
   preloadedQuestions = []
 }: QuizProps) => {
+  const [questions, setQuestions] = useState<Question[]>([]);
   const [currentQuestion, setCurrentQuestion] = useState<Question | null>(null);
   const [selectedAnswer, setSelectedAnswer] = useState<string | null>(null);
   const [showExplanation, setShowExplanation] = useState(false);
@@ -49,14 +51,13 @@ export const Quiz = ({
     timeLimit !== "No Limit" ? parseInt(timeLimit) : null
   );
   const [isQuizComplete, setIsQuizComplete] = useState(false);
-  const [questions, setQuestions] = useState<Question[]>(preloadedQuestions);
-  const [answers, setAnswers] = useState<Record<number, string>>({});
+  const [userAnswers, setUserAnswers] = useState<Record<number, string>>({});
   const [isLoading, setIsLoading] = useState(true);
   const navigate = useNavigate();
 
+  // Initialize quiz with preloaded questions or fetch new ones
   useEffect(() => {
     if (preloadedQuestions && preloadedQuestions.length > 0) {
-      console.log("Using preloaded questions:", preloadedQuestions.length);
       setQuestions(preloadedQuestions);
       setCurrentQuestion(preloadedQuestions[0]);
       setIsLoading(false);
@@ -101,128 +102,110 @@ export const Quiz = ({
   };
 
   const loadQuestion = async () => {
-    setIsLoading(true);
-    
-    if (preloadedQuestions && preloadedQuestions.length > 0 && questionNumber <= preloadedQuestions.length) {
-      const nextQuestion = preloadedQuestions[questionNumber - 1];
-      setCurrentQuestion(nextQuestion);
-      setSelectedAnswer(null);
-      setShowExplanation(false);
-      setIsLoading(false);
-      return;
-    }
-    
-    const topicString = topic ? `${chapter} - ${topic}` : chapter;
-    const scope = chapter === "Complete Subject" ? subject : `${subject} - ${topicString}`;
-    const newQuestion = await generateQuestion(scope, difficulty);
-    if (newQuestion) {
-      setCurrentQuestion(newQuestion);
-      if (!preloadedQuestions || preloadedQuestions.length === 0) {
+    if (preloadedQuestions && preloadedQuestions.length > 0) {
+      // For preloaded quiz, just move to the next question in the array
+      if (questionNumber <= preloadedQuestions.length) {
+        setCurrentQuestion(preloadedQuestions[questionNumber - 1]);
+      }
+    } else {
+      // For AI-generated quiz, fetch a new question
+      setIsLoading(true);
+      const topicString = topic ? `${chapter} - ${topic}` : chapter;
+      const scope = chapter === "Complete Subject" ? subject : `${subject} - ${topicString}`;
+      const newQuestion = await generateQuestion(scope, difficulty);
+      
+      if (newQuestion) {
+        setCurrentQuestion(newQuestion);
+        // Add to questions array for result tracking
         setQuestions(prev => [...prev, newQuestion]);
       }
-      setSelectedAnswer(null);
-      setShowExplanation(false);
+      setIsLoading(false);
     }
-    setIsLoading(false);
+    
+    setSelectedAnswer(null);
+    setShowExplanation(false);
   };
 
   const handleAnswerSelect = (answer: string) => {
     if (!selectedAnswer && timeRemaining !== 0) {
       setSelectedAnswer(answer);
       
-      setAnswers(prev => ({...prev, [questionNumber-1]: answer}));
+      // Track user's answer for this question
+      setUserAnswers(prev => ({
+        ...prev,
+        [questionNumber - 1]: answer
+      }));
       
-      if (currentQuestion && answer === currentQuestion.correctAnswer) {
-        setScore(prevScore => {
-          const newScore = prevScore + 1;
-          console.log(`Correct answer selected: ${answer}, updating score from ${prevScore} to ${newScore}`);
-          return newScore;
-        });
-      } else {
-        console.log(`Selected answer: ${answer}, correct was: ${currentQuestion?.correctAnswer}`);
+      if (answer === currentQuestion?.correctAnswer) {
+        setScore(prev => prev + 1);
       }
     }
   };
 
   const handleNext = async () => {
-    const maxQuestions = preloadedQuestions && preloadedQuestions.length > 0 
-      ? preloadedQuestions.length 
-      : parseInt(questionCount);
-      
-    if (questionCount !== "No Limit" && questionNumber >= maxQuestions) {
-      console.log("Quiz complete. Final score:", score, "out of", maxQuestions);
-      console.log("User answers:", JSON.stringify(answers));
-      console.log("Questions:", questions.length);
-      
+    if (questionCount !== "No Limit" && questionNumber >= parseInt(questionCount)) {
       setIsQuizComplete(true);
       
-      if (!simultaneousResults) {
-        try {
-          const { data: { user } } = await supabase.auth.getUser();
-          
-          if (user) {
-            const { data: userData } = await supabase
-              .from('profiles')
-              .select('name')
-              .eq('id', user.id)
-              .single();
-              
-            const userName = userData?.name || 'User';
+      try {
+        // Save quiz result to database if user is logged in
+        const { data: { user } } = await supabase.auth.getUser();
+        
+        if (user) {
+          const { data: userData } = await supabase
+            .from('profiles')
+            .select('name')
+            .eq('id', user.id)
+            .single();
             
-            const { data: resultData, error } = await supabase
-              .from('quiz_results')
-              .insert({
-                quiz_id: quizId || 'ai-generated',
-                user_id: user.id,
-                user_name: userName,
-                score: score,
-                total_questions: maxQuestions,
-                time_taken: timeLimit !== "No Limit" ? parseInt(timeLimit) - (timeRemaining || 0) : null
-              })
-              .select('id')
-              .single();
-              
-            if (resultData && resultData.id) {
+          const userName = userData?.name || 'User';
+          
+          const { data: resultData, error } = await supabase
+            .from('quiz_results')
+            .insert({
+              quiz_id: quizId || 'ai-generated',
+              user_id: user.id,
+              user_name: userName,
+              score: score,
+              total_questions: parseInt(questionCount),
+              time_taken: null
+            })
+            .select('id')
+            .single();
+            
+          if (resultData && resultData.id) {
+            // Navigate to results page if not showing results immediately
+            if (!simultaneousResults) {
               navigate(`/quiz/results/${resultData.id}`);
               return;
             }
           }
-        } catch (error) {
-          console.error("Error saving quiz result:", error);
         }
+      } catch (error) {
+        console.error("Error saving quiz result:", error);
       }
       
       return;
     }
     
     setQuestionNumber(prev => prev + 1);
-    
-    if (preloadedQuestions && preloadedQuestions.length > 0) {
-      const nextIndex = questionNumber;
-      if (nextIndex < preloadedQuestions.length) {
-        setCurrentQuestion(preloadedQuestions[nextIndex]);
-        setSelectedAnswer(null);
-        setShowExplanation(false);
-      }
-    } else {
-      loadQuestion();
-    }
+    loadQuestion();
   };
 
   const handleRestartQuiz = () => {
     setScore(0);
     setQuestionNumber(1);
     setIsQuizComplete(false);
+    setUserAnswers({});
+    if (!preloadedQuestions.length) {
+      setQuestions([]);
+    }
     setTimeRemaining(timeLimit !== "No Limit" ? parseInt(timeLimit) : null);
     
     if (preloadedQuestions && preloadedQuestions.length > 0) {
       setCurrentQuestion(preloadedQuestions[0]);
     } else {
-      setQuestions([]);
       loadQuestion();
     }
-    
-    setAnswers({});
   };
 
   const formatTime = (seconds: number): string => {
@@ -232,22 +215,20 @@ export const Quiz = ({
   };
 
   if (isQuizComplete) {
-    const finalQuestions = preloadedQuestions.length > 0 ? preloadedQuestions : questions;
-    
     return (
       <>
         <QuizAd className="my-4" />
         <QuizResults 
           score={score} 
-          totalQuestions={finalQuestions.length || parseInt(questionCount)} 
+          totalQuestions={parseInt(questionCount)} 
           onRestartQuiz={handleRestartQuiz}
           subject={subject}
           chapter={chapter}
           topic={topic}
           difficulty={difficulty}
-          questions={finalQuestions}
-          answers={answers}
-          quizId={quizId || "ai-generated"}
+          questions={questions}
+          answers={userAnswers}
+          quizId={quizId}
         />
         <NativeAd className="my-8" />
       </>
@@ -255,16 +236,17 @@ export const Quiz = ({
   }
 
   if (isLoading || !currentQuestion) {
-    return <div className="text-center p-6">Loading question...</div>;
+    return <div className="text-center p-8">Loading question...</div>;
   }
 
   return (
     <div className="max-w-4xl mx-auto p-6 space-y-6 mt-16">
+      {/* Top Ad */}
       <QuizAd className="mb-4" />
       
       <div className="flex justify-between items-center">
         <div className="text-lg font-semibold">
-          Question {questionNumber} {questionCount !== "No Limit" && `of ${preloadedQuestions.length || questionCount}`}
+          Question {questionNumber} {questionCount !== "No Limit" && `of ${questionCount}`}
         </div>
         <div className="flex items-center gap-4">
           <div className="text-lg">Score: {score}</div>
@@ -314,6 +296,7 @@ export const Quiz = ({
         )}
       </div>
       
+      {/* Bottom Ad */}
       <NativeAd className="mt-6" />
     </div>
   );
