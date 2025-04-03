@@ -33,6 +33,8 @@ export const QuizResults = ({
   const [userName, setUserName] = useState<string>("");
   const [rankings, setRankings] = useState<any[]>([]);
   const [calculatedScore, setCalculatedScore] = useState<number>(score);
+  const [selectedQuestionIndex, setSelectedQuestionIndex] = useState<number | null>(null);
+  const [showExplanation, setShowExplanation] = useState(false);
   const percentage = Math.round((calculatedScore / totalQuestions) * 100);
   
   useEffect(() => {
@@ -150,36 +152,67 @@ export const QuizResults = ({
           {questions.length > 0 && (
             <div className="mt-4">
               <h3 className="text-xl font-semibold mb-4 text-left">Question Analysis</h3>
-              <div className="space-y-4">
-                {questions.map((question, idx) => {
-                  const userAnswer = answers[idx] || "";
-                  const isCorrect = userAnswer === question.correctAnswer;
-                  
-                  return (
-                    <div key={idx} className={`p-4 border rounded-lg ${isCorrect ? 'bg-green-50' : 'bg-red-50'}`}>
-                      <p className="font-medium">{question.question}</p>
-                      <div className="mt-2">
-                        <span className="font-medium">Your answer: </span>
-                        {userAnswer ? (
-                          <span className={isCorrect ? 'text-green-600' : 'text-red-600'}>
-                            {userAnswer}. {question.options.find(opt => opt[0] === userAnswer)?.substring(3)}
-                          </span>
-                        ) : (
-                          <span className="text-gray-500">Not answered</span>
-                        )}
-                      </div>
-                      {!isCorrect && (
-                        <div className="mt-1">
-                          <span className="font-medium">Correct answer: </span>
-                          <span className="text-green-600">
-                            {question.correctAnswer}. {question.options.find(opt => opt[0] === question.correctAnswer)?.substring(3)}
-                          </span>
-                        </div>
-                      )}
-                    </div>
-                  );
-                })}
+              
+              <div className="flex flex-wrap gap-2 mb-4 justify-center">
+                {questions.map((_, index) => (
+                  <button
+                    key={index}
+                    className={`h-10 w-10 rounded-full flex items-center justify-center text-sm ${
+                      index === selectedQuestionIndex
+                        ? 'bg-medical-blue text-white'
+                        : 'bg-gray-100 border'
+                    }`}
+                    onClick={() => {
+                      setSelectedQuestionIndex(index);
+                      setShowExplanation(false);
+                    }}
+                  >
+                    {index + 1}
+                  </button>
+                ))}
               </div>
+              
+              {selectedQuestionIndex !== null && (
+                <div className="p-4 border rounded-lg">
+                  <p className="font-medium">{questions[selectedQuestionIndex].question}</p>
+                  <div className="mt-4 space-y-2">
+                    {questions[selectedQuestionIndex].options.map((option: string, idx: number) => {
+                      const optionLetter = option[0];
+                      const isUserAnswer = answers[selectedQuestionIndex] === optionLetter;
+                      const isCorrectAnswer = questions[selectedQuestionIndex].correctAnswer === optionLetter;
+                      
+                      return (
+                        <div 
+                          key={idx}
+                          className={`p-3 rounded border ${
+                            isCorrectAnswer 
+                              ? 'bg-green-50 border-green-300' 
+                              : isUserAnswer && !isCorrectAnswer
+                              ? 'bg-red-50 border-red-300'
+                              : 'bg-gray-50'
+                          }`}
+                        >
+                          {option}
+                        </div>
+                      );
+                    })}
+                  </div>
+                  
+                  <Button
+                    onClick={() => setShowExplanation(!showExplanation)}
+                    variant="outline"
+                    className="mt-4"
+                  >
+                    {showExplanation ? "Hide" : "Show"} Explanation
+                  </Button>
+                  
+                  {showExplanation && (
+                    <div className="mt-4 p-4 bg-blue-50 rounded-md">
+                      <p>{questions[selectedQuestionIndex].explanation}</p>
+                    </div>
+                  )}
+                </div>
+              )}
             </div>
           )}
           
