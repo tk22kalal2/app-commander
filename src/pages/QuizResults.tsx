@@ -194,7 +194,7 @@ const QuizResults = () => {
   const handleShareResults = () => {
     if (!quiz || !result) return;
     
-    const shareUrl = `${window.location.origin}/quiz/results/${id}`;
+    const shareUrl = `https://medquizai.afrahtafreeh.site/quiz/take/${quiz.id}`;
     const shareText = `I scored ${result.score}/${result.total_questions} (${Math.round((result.score / result.total_questions) * 100)}%) on "${quiz.title}" quiz!`;
     
     if (navigator.share) {
