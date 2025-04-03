@@ -5,10 +5,13 @@ interface QuizAdProps {
   className?: string;
 }
 
-export const QuizAd: React.FC<QuizAdProps> = ({ className = "" }) => {
+export const QuizAd: React.FC<QuizAdProps> = ({ className = '' }) => {
   return (
-    <div className={`bg-gray-100 rounded-md p-4 text-center ${className}`}>
-      <p className="text-gray-500 text-sm">Advertisement</p>
+    <div className={`ad-container ${className}`}>
+      {/* Ad implementation goes here */}
+      <div className="bg-gray-100 p-4 text-center rounded">
+        <p className="text-gray-500 text-sm">Advertisement</p>
+      </div>
     </div>
   );
 };

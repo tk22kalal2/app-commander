@@ -32,6 +32,8 @@ export const QuizDisplay = ({
   questionCount,
   formattedQuestions
 }: QuizDisplayProps) => {
+  const [loading, setLoading] = useState(true);
+  
   // Transform our formatted questions to match Quiz component's expected format
   const transformedQuestions = formattedQuestions.map(q => ({
     question: q.question_text,
@@ -50,6 +52,17 @@ export const QuizDisplay = ({
   const totalTime = timePerQuestion ? 
     (parseInt(timePerQuestion) * questionCount).toString() : 
     "No Limit";
+  
+  useEffect(() => {
+    // Set loading to false once questions are ready
+    if (formattedQuestions.length > 0) {
+      setLoading(false);
+    }
+  }, [formattedQuestions]);
+  
+  if (loading && formattedQuestions.length === 0) {
+    return <div className="text-center p-6">Loading questions...</div>;
+  }
   
   return (
     <div className="max-w-4xl mx-auto">
@@ -76,6 +89,7 @@ export const QuizDisplay = ({
         timeLimit={totalTime}
         quizId={quizId}
         simultaneousResults={true}
+        preloadedQuestions={transformedQuestions}
       />
     </div>
   );

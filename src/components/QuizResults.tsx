@@ -1,3 +1,4 @@
+
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Trophy } from "lucide-react";
@@ -31,7 +32,8 @@ export const QuizResults = ({
 }: QuizResultsProps) => {
   const [userName, setUserName] = useState<string>("");
   const [rankings, setRankings] = useState<any[]>([]);
-  const percentage = Math.round((score / totalQuestions) * 100);
+  const [calculatedScore, setCalculatedScore] = useState<number>(score);
+  const percentage = Math.round((calculatedScore / totalQuestions) * 100);
   
   useEffect(() => {
     console.log("QuizResults received:", {
@@ -43,6 +45,27 @@ export const QuizResults = ({
         correctAnswer: q.correctAnswer
       }))
     });
+    
+    // Double-check the score by counting correct answers
+    if (questions && questions.length > 0 && Object.keys(answers).length > 0) {
+      let correctCount = 0;
+      
+      Object.entries(answers).forEach(([index, answer]) => {
+        const questionIndex = parseInt(index);
+        if (questionIndex < questions.length) {
+          const question = questions[questionIndex];
+          if (question && answer === question.correctAnswer) {
+            correctCount++;
+          }
+        }
+      });
+      
+      console.log("Calculated score from answers:", correctCount);
+      if (correctCount !== score) {
+        console.warn("Score mismatch, using calculated score:", correctCount, "vs provided:", score);
+        setCalculatedScore(correctCount);
+      }
+    }
     
     const fetchUserDataAndRankings = async () => {
       try {
@@ -100,7 +123,7 @@ export const QuizResults = ({
     };
     
     fetchUserDataAndRankings();
-  }, [quizId, score, totalQuestions]);
+  }, [quizId, score, totalQuestions, questions, answers]);
   
   return (
     <div className="max-w-2xl mx-auto p-6">
@@ -118,7 +141,7 @@ export const QuizResults = ({
             </div>
           )}
           <div className="text-4xl font-bold text-medical-blue">
-            {score} / {totalQuestions}
+            {calculatedScore} / {totalQuestions}
           </div>
           <div className="text-2xl text-gray-600">
             {percentage}% Correct
